@@ -6,9 +6,10 @@ function renderServices() {
   if (!container) return;
 
   const serviceLimit = Number.parseInt(container.dataset.serviceLimit, 10);
-  const visibleServices = Number.isInteger(serviceLimit) && serviceLimit > 0
-    ? services.slice(0, serviceLimit)
-    : services;
+  const visibleServices =
+    Number.isInteger(serviceLimit) && serviceLimit > 0
+      ? services.slice(0, serviceLimit)
+      : services;
   const cards = visibleServices.map((service, index) => {
     const article = document.createElement("article");
     article.className = "service-card";
@@ -60,7 +61,9 @@ function setupMobileMenu() {
     menu.classList.toggle("is-open", !isOpen);
   });
 
-  menu.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
+  menu
+    .querySelectorAll("a")
+    .forEach((link) => link.addEventListener("click", closeMenu));
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeMenu();
   });

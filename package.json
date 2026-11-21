@@ -1,0 +1,16 @@
+{
+  "name": "multiservicios-hedman",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "lint": "eslint js tests",
+    "format": "prettier --write \"*.html\" \"css/**/*.css\" \"js/**/*.js\" \"tests/**/*.js\"",
+    "format:check": "prettier --check \"*.html\" \"css/**/*.css\" \"js/**/*.js\" \"tests/**/*.js\"",
+    "validate:links": "node scripts/check-links.js"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.1",
+    "prettier": "^3.7.4"
+  }
+}

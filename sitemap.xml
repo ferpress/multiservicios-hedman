@@ -2,7 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ferpress.github.io/multiservicios-hedman/</loc>
-    <lastmod>2026-11-16</lastmod>
+    <lastmod>2026-11-21</lastmod>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://ferpress.github.io/multiservicios-hedman/servicios.html</loc>
+    <lastmod>2026-11-21</lastmod>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://ferpress.github.io/multiservicios-hedman/nosotros.html</loc>
+    <lastmod>2026-11-21</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://ferpress.github.io/multiservicios-hedman/cotizacion.html</loc>
+    <lastmod>2026-11-21</lastmod>
+    <priority>0.8</priority>
   </url>
 </urlset>

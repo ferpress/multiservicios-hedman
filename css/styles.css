@@ -165,7 +165,11 @@ textarea {
   font-size: 0.88rem;
   font-weight: 700;
   text-align: center;
-  transition: background 160ms ease, color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
 }
 
 .button:hover {
@@ -519,8 +523,7 @@ textarea {
 
 .home-cta {
   background:
-    radial-gradient(circle at 85% 15%, #7191b533 0, transparent 28%),
-    #17283e;
+    radial-gradient(circle at 85% 15%, #7191b533 0, transparent 28%), #17283e;
   color: #fff;
 }
 
@@ -650,7 +653,10 @@ textarea {
   border-radius: 0.9rem;
   background: #fff;
   padding: 1.5rem;
-  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 .service-card:hover {
@@ -976,7 +982,9 @@ textarea {
   color: var(--ink);
   font-size: 0.85rem;
   outline: none;
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
 }
 
 textarea.form-control {

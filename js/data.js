@@ -6,7 +6,8 @@ export const business = {
 export const services = [
   {
     name: "Ventanas de aluminio y vidrio",
-    description: "Fabricación e instalación de ventanas a medida para cada espacio.",
+    description:
+      "Fabricación e instalación de ventanas a medida para cada espacio.",
     details: [
       "Ventanas corredizas de dos, tres o cuatro hojas.",
       "Ventanas de aluminio tipo Europa.",
@@ -17,7 +18,8 @@ export const services = [
   },
   {
     name: "Puertas de aluminio y vidrio",
-    description: "Puertas funcionales y resistentes para viviendas, terrazas y comercios.",
+    description:
+      "Puertas funcionales y resistentes para viviendas, terrazas y comercios.",
     details: [
       "Puertas corredizas de aluminio de dos, tres o cuatro paños.",
       "Puertas de vidrio templado.",
@@ -36,7 +38,8 @@ export const services = [
   },
   {
     name: "Muebles de cocina",
-    description: "Diseño, fabricación e instalación de cocinas adaptadas a tu espacio.",
+    description:
+      "Diseño, fabricación e instalación de cocinas adaptadas a tu espacio.",
     details: [
       "Cocinas personalizadas en forma de L y muebles inferiores.",
       "Módulos para fregadores, hornos empotrables y electrodomésticos.",
@@ -47,7 +50,8 @@ export const services = [
   },
   {
     name: "Muebles personalizados",
-    description: "Muebles funcionales diseñados según tus necesidades y dimensiones.",
+    description:
+      "Muebles funcionales diseñados según tus necesidades y dimensiones.",
     details: [
       "Gabinetes, puertas y módulos a medida.",
       "Modificación y adaptación de muebles y espacios existentes.",
@@ -57,7 +61,8 @@ export const services = [
   },
   {
     name: "Mantenimiento y reparaciones",
-    description: "Revisión, ajuste y reemplazo de componentes para puertas y ventanas.",
+    description:
+      "Revisión, ajuste y reemplazo de componentes para puertas y ventanas.",
     details: [
       "Ajustes de puertas y ventanas corredizas.",
       "Cambio de rodajas, cerraduras, manijas y accesorios.",
