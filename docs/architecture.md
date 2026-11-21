@@ -12,14 +12,18 @@ y recursos comunes.
 - `css/styles.css`: diseño y componentes visuales comunes.
 - `js/data.js`: nombre comercial, WhatsApp y catálogo.
 - `js/main.js`: menú móvil, año dinámico y renderizado de servicios.
-- `js/cotizador.js`: opciones, validación y URL de WhatsApp.
+- `js/cotizador.js`: formulario, vista previa SVG, desglose, impresión y enlace WhatsApp.
+- `js/quote-engine.js`: conversiones de medida, cálculos puros de tarifas y rango.
+- `js/tarifas.js`: estructura de precios pendientes e ITBMS.
 
 ## Flujo de cotización
 
 1. El usuario abre `cotizacion.html` o selecciona un servicio.
 2. `main.js` carga el formulario y el catálogo.
-3. `cotizador.js` valida el número y construye el mensaje.
-4. El navegador abre WhatsApp para revisión y envío.
+3. `cotizador.js` obtiene el desglose de `quote-engine.js` con las tarifas de
+   `tarifas.js`; si falta una tarifa, muestra importes pendientes.
+4. El navegador prepara una cotización imprimible o abre WhatsApp para revisión
+   y envío.
 
 ## Evolución
 

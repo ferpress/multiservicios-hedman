@@ -115,74 +115,821 @@
         </div>
       </section>
       <section class="section quote-section">
-        <div class="container quote-layout">
-          <div class="quote-copy">
-            <p class="eyebrow">Hablemos de tu idea</p>
-            <h2 class="section-title">Solicita tu cotización</h2>
+        <div class="container">
+          <div class="quote-builder-heading">
+            <p class="eyebrow">Cotizador inteligente</p>
+            <h2 class="section-title">Diseña tu proyecto</h2>
             <p class="section-description">
-              Te acompañamos desde la toma de medidas hasta la instalación. Cada
-              propuesta se prepara según el proyecto.
+              Describe medidas y acabados para preparar una solicitud detallada.
+              Los precios están pendientes de cargar tarifas comerciales
+              aprobadas.
             </p>
-            <div class="quote-note">
-              <span aria-hidden="true">✓</span>
-              <p>
-                <strong>Sin precios genéricos.</strong><br />Revisamos cada
-                necesidad para recomendar una solución adecuada.
-              </p>
-            </div>
-            <div class="quote-contact-card">
-              <span class="quote-contact-icon" aria-hidden="true">15+</span>
-              <p>
-                <strong>Más de 15 años de experiencia</strong><br />Calidad y
-                compromiso en cada trabajo.
-              </p>
-            </div>
           </div>
-          <form id="quote-form" class="quote-card">
-            <h2>Cuéntanos qué necesitas</h2>
-            <label class="form-label" for="quote-name">Tu nombre</label>
-            <input
-              id="quote-name"
-              class="form-control"
-              name="name"
-              type="text"
-              autocomplete="name"
-              maxlength="80"
-              placeholder="¿Cómo te llamas?"
-              required
-            />
-            <label class="form-label" for="quote-service"
-              >¿Qué servicio necesitas?</label
+          <div class="quote-builder-layout">
+            <form id="quote-form" class="quote-card quote-builder">
+              <h2>Datos del proyecto</h2>
+              <div class="quote-fields-grid">
+                <div class="quote-field">
+                  <label class="form-label" for="quote-name">Tu nombre</label>
+                  <input
+                    id="quote-name"
+                    class="form-control"
+                    name="name"
+                    type="text"
+                    autocomplete="name"
+                    maxlength="80"
+                    placeholder="¿Cómo te llamas?"
+                    required
+                  />
+                </div>
+                <div class="quote-field">
+                  <label class="form-label" for="quote-phone"
+                    >Tu teléfono <span>(opcional)</span></label
+                  >
+                  <input
+                    id="quote-phone"
+                    class="form-control"
+                    name="clientPhone"
+                    type="tel"
+                    autocomplete="tel"
+                    maxlength="30"
+                    placeholder="+507"
+                  />
+                </div>
+                <div class="quote-field quote-field-full">
+                  <label class="form-label" for="quote-service"
+                    >¿Qué servicio necesitas?</label
+                  >
+                  <select
+                    id="quote-service"
+                    class="form-control"
+                    name="service"
+                    required
+                  >
+                    <option value="">Selecciona un servicio</option>
+                    <option value="windows">
+                      Ventanas corredizas / proyectables
+                    </option>
+                    <option value="bathroom">
+                      Puertas de baño en vidrio templado
+                    </option>
+                    <option value="kitchen">Muebles de cocina a medida</option>
+                    <option value="welding">Soldadura general</option>
+                    <option value="other">
+                      Puertas, muebles y otros trabajos
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <fieldset
+                class="quote-fieldset"
+                data-service-fields="windows"
+                hidden
+                disabled
+              >
+                <legend>Ventanas de aluminio y vidrio</legend>
+                <div class="quote-fields-grid">
+                  <div class="quote-field">
+                    <label class="form-label" for="window-type"
+                      >Tipo de apertura</label
+                    >
+                    <select
+                      class="form-control"
+                      id="window-type"
+                      name="windowType"
+                    >
+                      <option value="sliding">Corrediza</option>
+                      <option value="projecting">Proyectable</option>
+                    </select>
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="window-quantity"
+                      >Cantidad de ventanas</label
+                    >
+                    <input
+                      class="form-control"
+                      id="window-quantity"
+                      name="quantity"
+                      type="number"
+                      min="1"
+                      max="100"
+                      step="1"
+                      value="1"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="window-width"
+                      >Ancho (cm)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="window-width"
+                      name="width"
+                      type="number"
+                      min="1"
+                      max="1000"
+                      step="0.1"
+                      value="120"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="window-height"
+                      >Alto (cm)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="window-height"
+                      name="height"
+                      type="number"
+                      min="1"
+                      max="1000"
+                      step="0.1"
+                      value="120"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="frame-color"
+                      >Color del aluminio</label
+                    >
+                    <select
+                      class="form-control"
+                      id="frame-color"
+                      name="frameColor"
+                    >
+                      <option value="natural">Aluminio natural</option>
+                      <option value="white">Blanco (+10%)</option>
+                      <option value="black">Negro (+18%)</option>
+                      <option value="bronze">Bronce (+18%)</option>
+                      <option value="wood">Veta de madera (+25%)</option>
+                    </select>
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="window-glass">Vidrio</label>
+                    <select class="form-control" id="window-glass" name="glass">
+                      <option value="clear">Claro</option>
+                      <option value="bronze">Bronce</option>
+                      <option value="gray">Gris</option>
+                      <option value="reflective">Reflectivo</option>
+                      <option value="tempered">Templado</option>
+                    </select>
+                  </div>
+                  <div class="quote-field quote-field-full">
+                    <label class="form-label" for="window-thickness"
+                      >Espesor del vidrio</label
+                    >
+                    <select
+                      class="form-control"
+                      id="window-thickness"
+                      name="glassThickness"
+                    >
+                      <option value="6">6 mm</option>
+                      <option value="8">8 mm</option>
+                      <option value="10">10 mm</option>
+                    </select>
+                  </div>
+                </div>
+                <p class="quote-calculation-note" id="window-area-note"></p>
+              </fieldset>
+
+              <fieldset
+                class="quote-fieldset"
+                data-service-fields="bathroom"
+                hidden
+                disabled
+              >
+                <legend>Puerta de baño</legend>
+                <div class="quote-fields-grid">
+                  <div class="quote-field">
+                    <label class="form-label" for="bath-width"
+                      >Ancho (cm)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="bath-width"
+                      name="width"
+                      type="number"
+                      min="1"
+                      max="1000"
+                      step="0.1"
+                      value="120"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="bath-height"
+                      >Alto (cm)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="bath-height"
+                      name="height"
+                      type="number"
+                      min="1"
+                      max="1000"
+                      step="0.1"
+                      value="190"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="bath-quantity"
+                      >Cantidad</label
+                    >
+                    <input
+                      class="form-control"
+                      id="bath-quantity"
+                      name="quantity"
+                      type="number"
+                      min="1"
+                      max="100"
+                      step="1"
+                      value="1"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="bath-thickness"
+                      >Vidrio templado</label
+                    >
+                    <select
+                      class="form-control"
+                      id="bath-thickness"
+                      name="glassThickness"
+                    >
+                      <option value="8">8 mm</option>
+                      <option value="10">10 mm</option>
+                    </select>
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="bath-type"
+                      >Tipo de puerta</label
+                    >
+                    <select class="form-control" id="bath-type" name="doorType">
+                      <option value="sliding">Corrediza</option>
+                      <option value="hinged">Batiente</option>
+                    </select>
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="bath-hardware"
+                      >Herrajes</label
+                    >
+                    <select
+                      class="form-control"
+                      id="bath-hardware"
+                      name="hardware"
+                    >
+                      <option value="chrome">Acero inoxidable cromado</option>
+                      <option value="black">Acero inoxidable negro mate</option>
+                    </select>
+                  </div>
+                  <div class="quote-field quote-field-full">
+                    <label class="form-label" for="bath-glass"
+                      >Tono del vidrio</label
+                    >
+                    <select class="form-control" id="bath-glass" name="glass">
+                      <option value="clear">Claro</option>
+                      <option value="bronze">Bronce</option>
+                      <option value="gray">Gris</option>
+                    </select>
+                  </div>
+                </div>
+                <p class="quote-calculation-note" id="bath-area-note"></p>
+              </fieldset>
+
+              <fieldset
+                class="quote-fieldset"
+                data-service-fields="kitchen"
+                hidden
+                disabled
+              >
+                <legend>Muebles de cocina</legend>
+                <div class="quote-fields-grid">
+                  <div class="quote-field">
+                    <label class="form-label" for="kitchen-base"
+                      >Gabinetes inferiores (ml)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="kitchen-base"
+                      name="baseLinearMeters"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value="0"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="kitchen-upper"
+                      >Gabinetes superiores (ml)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="kitchen-upper"
+                      name="upperLinearMeters"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      value="3"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="kitchen-material"
+                      >Material</label
+                    >
+                    <select
+                      class="form-control"
+                      id="kitchen-material"
+                      name="cabinetMaterial"
+                    >
+                      <option value="melamine">Melamina estándar</option>
+                      <option value="rh">MDF hidrófugo / RH</option>
+                      <option value="pvc">PVC</option>
+                    </select>
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="kitchen-color"
+                      >Color / acabado</label
+                    >
+                    <select
+                      class="form-control"
+                      id="kitchen-color"
+                      name="materialColor"
+                    >
+                      <option value="white">Blanco</option>
+                      <option value="natural">Madera clara</option>
+                      <option value="wood">Veta de madera</option>
+                      <option value="black">Negro</option>
+                    </select>
+                  </div>
+                  <div class="quote-field quote-field-full">
+                    <label class="form-label" for="countertop"
+                      >Sobrecubierta</label
+                    >
+                    <select
+                      class="form-control"
+                      id="countertop"
+                      name="countertop"
+                    >
+                      <option value="none">Sin sobrecubierta</option>
+                      <option value="laminate">Laminada</option>
+                      <option value="granite">Granito</option>
+                      <option value="quartz">Cuarzo</option>
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset
+                class="quote-fieldset"
+                data-service-fields="welding"
+                hidden
+                disabled
+              >
+                <legend>Soldadura general</legend>
+                <div class="quote-fields-grid">
+                  <div class="quote-field">
+                    <label class="form-label" for="weld-project"
+                      >Tipo de proyecto</label
+                    >
+                    <select
+                      class="form-control"
+                      id="weld-project"
+                      name="weldProject"
+                    >
+                      <option value="securityBars">Verjas de seguridad</option>
+                      <option value="gate">Portón</option>
+                      <option value="roof">Techo / estructura de techo</option>
+                      <option value="custom">Estructura personalizada</option>
+                    </select>
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="weld-finish">Acabado</label>
+                    <select
+                      class="form-control"
+                      id="weld-finish"
+                      name="weldFinish"
+                    >
+                      <option value="primer">Imprimación anticorrosiva</option>
+                      <option value="enamel">
+                        Esmalte / acabado electrostático
+                      </option>
+                    </select>
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="weld-measure-unit"
+                      >Unidad de medida aproximada</label
+                    >
+                    <select
+                      class="form-control"
+                      id="weld-measure-unit"
+                      name="weldMeasureUnit"
+                    >
+                      <option value="area">Área (m²)</option>
+                      <option value="linear">Longitud (ml)</option>
+                    </select>
+                  </div>
+                  <div class="quote-field" id="weld-area-dimensions">
+                    <label class="form-label" for="weld-width"
+                      >Ancho o frente (m)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="weld-width"
+                      name="weldWidth"
+                      type="number"
+                      min="0.1"
+                      max="1000"
+                      step="0.1"
+                      value="2"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field" id="weld-area-height">
+                    <label class="form-label" for="weld-height"
+                      >Alto / fondo (m)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="weld-height"
+                      name="weldHeight"
+                      type="number"
+                      min="0.1"
+                      max="1000"
+                      step="0.1"
+                      value="1"
+                      required
+                    />
+                  </div>
+                  <div class="quote-field" id="weld-linear-dimension" hidden>
+                    <label class="form-label" for="weld-linear-length"
+                      >Longitud aproximada (ml)</label
+                    >
+                    <input
+                      class="form-control"
+                      id="weld-linear-length"
+                      name="weldLinearLength"
+                      type="number"
+                      min="0.1"
+                      max="1000"
+                      step="0.1"
+                      value="2"
+                    />
+                  </div>
+                  <div class="quote-field">
+                    <label class="form-label" for="weld-quantity"
+                      >Cantidad</label
+                    >
+                    <input
+                      class="form-control"
+                      id="weld-quantity"
+                      name="quantity"
+                      type="number"
+                      min="1"
+                      max="100"
+                      step="1"
+                      value="1"
+                      required
+                    />
+                  </div>
+                </div>
+              </fieldset>
+
+              <fieldset
+                class="quote-fieldset"
+                data-service-fields="other"
+                hidden
+                disabled
+              >
+                <legend>Otros trabajos</legend>
+                <div class="quote-field">
+                  <label class="form-label" for="other-description"
+                    >Describe el trabajo</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="other-description"
+                    name="otherDescription"
+                    rows="3"
+                    maxlength="500"
+                    placeholder="Indica el tipo de trabajo y las medidas aproximadas."
+                    required
+                  ></textarea>
+                </div>
+              </fieldset>
+
+              <div class="quote-section-divider"></div>
+              <h3 class="quote-subheading">Ubicación e instalación</h3>
+              <div class="quote-fields-grid">
+                <div class="quote-field">
+                  <label class="form-label" for="quote-location"
+                    >Zona del proyecto</label
+                  >
+                  <select
+                    class="form-control"
+                    id="quote-location"
+                    name="location"
+                    required
+                  >
+                    <option value="">Selecciona la zona</option>
+                    <option value="center">Panamá Centro</option>
+                    <option value="sanMiguelito">
+                      San Miguelito / Brisas del Golf
+                    </option>
+                    <option value="east">Panamá Este / Tocumen</option>
+                    <option value="west">
+                      Panamá Oeste / Arraiján - La Chorrera
+                    </option>
+                    <option value="interior">Interior / Otros</option>
+                  </select>
+                </div>
+                <div class="quote-field">
+                  <label class="form-label" for="quote-address"
+                    >Corregimiento o referencia</label
+                  >
+                  <input
+                    class="form-control"
+                    id="quote-address"
+                    name="address"
+                    type="text"
+                    maxlength="120"
+                    placeholder="Sector o punto de referencia"
+                  />
+                </div>
+                <div class="quote-field quote-field-full">
+                  <label class="form-label" for="quote-details"
+                    >Notas adicionales <span>(opcional)</span></label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="quote-details"
+                    name="details"
+                    rows="3"
+                    maxlength="500"
+                    placeholder="Accesos, acabados o detalles que debamos conocer."
+                  ></textarea>
+                </div>
+              </div>
+              <p id="quote-error" class="form-error" role="alert" hidden></p>
+              <button class="button button-primary submit-button" type="submit">
+                Enviar solicitud por WhatsApp <span aria-hidden="true">↗</span>
+              </button>
+              <p class="form-hint">
+                Enviarás una solicitud detallada; los precios requieren tarifas
+                aprobadas y validación de medidas en sitio.
+              </p>
+            </form>
+
+            <aside
+              class="quote-preview-panel"
+              aria-label="Vista previa y resumen de cotización"
             >
-            <select
-              id="quote-service"
-              class="form-control"
-              name="service"
-              required
-            >
-              <option value="">Selecciona un servicio</option>
-            </select>
-            <label class="form-label" for="quote-details"
-              >Cuéntanos un poco más</label
-            >
-            <textarea
-              id="quote-details"
-              class="form-control"
-              name="details"
-              rows="5"
-              maxlength="700"
-              placeholder="Medidas aproximadas, tipo de espacio o cualquier detalle útil."
-              required
-            ></textarea>
-            <p id="quote-error" class="form-error" role="alert" hidden></p>
-            <button class="button button-primary submit-button" type="submit">
-              Enviar solicitud por WhatsApp <span aria-hidden="true">↗</span>
-            </button>
-            <p class="form-hint">
-              Podrás revisar el mensaje antes de enviarlo.
-            </p>
-          </form>
+              <div class="quote-preview-header">
+                <p class="eyebrow">Vista previa en vivo</p>
+                <h2 id="preview-title">Tu proyecto</h2>
+                <p id="preview-caption">
+                  Selecciona un servicio para comenzar.
+                </p>
+              </div>
+              <div class="quote-visual">
+                <svg
+                  id="quote-preview"
+                  viewBox="0 0 360 230"
+                  role="img"
+                  aria-labelledby="preview-svg-title preview-svg-desc"
+                >
+                  <title id="preview-svg-title">
+                    Vista previa del proyecto
+                  </title>
+                  <desc id="preview-svg-desc">
+                    Representación aproximada que cambia con tus medidas y
+                    acabados.
+                  </desc>
+                  <rect
+                    class="preview-wall"
+                    x="0"
+                    y="0"
+                    width="360"
+                    height="230"
+                    rx="14"
+                  />
+                  <g id="preview-window">
+                    <rect
+                      id="preview-frame"
+                      x="105"
+                      y="32"
+                      width="150"
+                      height="160"
+                      rx="3"
+                    />
+                    <rect
+                      id="preview-glass"
+                      x="114"
+                      y="41"
+                      width="132"
+                      height="142"
+                      rx="1"
+                    />
+                    <line
+                      id="preview-mullion"
+                      x1="180"
+                      y1="41"
+                      x2="180"
+                      y2="183"
+                    />
+                    <line
+                      id="preview-rail"
+                      x1="114"
+                      y1="112"
+                      x2="246"
+                      y2="112"
+                    />
+                    <line
+                      id="preview-shadow"
+                      x1="94"
+                      y1="197"
+                      x2="266"
+                      y2="197"
+                    />
+                  </g>
+                  <g id="preview-kitchen" hidden>
+                    <rect
+                      id="preview-counter"
+                      x="44"
+                      y="85"
+                      width="272"
+                      height="14"
+                      rx="3"
+                    />
+                    <rect
+                      id="preview-cabinet-upper"
+                      x="82"
+                      y="36"
+                      width="196"
+                      height="45"
+                      rx="3"
+                    />
+                    <rect
+                      id="preview-cabinet-base"
+                      x="44"
+                      y="104"
+                      width="272"
+                      height="86"
+                      rx="3"
+                    />
+                    <line x1="135" y1="104" x2="135" y2="190" />
+                    <line x1="226" y1="104" x2="226" y2="190" />
+                  </g>
+                  <g id="preview-welding" hidden>
+                    <rect
+                      id="preview-weld-frame"
+                      x="75"
+                      y="35"
+                      width="210"
+                      height="155"
+                      rx="2"
+                    />
+                    <line x1="110" y1="35" x2="110" y2="190" />
+                    <line x1="145" y1="35" x2="145" y2="190" />
+                    <line x1="180" y1="35" x2="180" y2="190" />
+                    <line x1="215" y1="35" x2="215" y2="190" />
+                    <line x1="250" y1="35" x2="250" y2="190" />
+                  </g>
+                </svg>
+              </div>
+              <p class="quote-area-note" id="preview-measure"></p>
+              <div class="quote-price-status" role="status">
+                <strong>Tarifas comerciales pendientes</strong>
+                <span
+                  >No se mostrarán montos hasta configurar precios
+                  aprobados.</span
+                >
+              </div>
+              <dl class="quote-breakdown">
+                <div>
+                  <dt>Material / fabricación</dt>
+                  <dd id="breakdown-base">Pendiente</dd>
+                </div>
+                <div>
+                  <dt>Acabados y herrajes</dt>
+                  <dd id="breakdown-finish">Pendiente</dd>
+                </div>
+                <div>
+                  <dt>Transporte y flete</dt>
+                  <dd id="breakdown-transport">Pendiente</dd>
+                </div>
+                <div>
+                  <dt>Instalación</dt>
+                  <dd id="breakdown-install">Pendiente</dd>
+                </div>
+                <div class="quote-breakdown-subtotal">
+                  <dt>Subtotal</dt>
+                  <dd id="breakdown-subtotal">Pendiente</dd>
+                </div>
+                <div>
+                  <dt>ITBMS (7 %)</dt>
+                  <dd id="breakdown-tax">Pendiente</dd>
+                </div>
+                <div class="quote-breakdown-total">
+                  <dt>Rango estimado</dt>
+                  <dd id="breakdown-total">Pendiente</dd>
+                </div>
+              </dl>
+              <p class="quote-estimate-disclaimer">
+                Cotización estimada sujeta a rectificación de medidas en sitio.
+                No constituye una oferta final.
+              </p>
+              <div class="quote-preview-actions">
+                <button
+                  class="button button-outline"
+                  id="print-quote"
+                  type="button"
+                >
+                  Imprimir / Guardar PDF
+                </button>
+              </div>
+            </aside>
+          </div>
         </div>
+      </section>
+      <section
+        id="quote-print"
+        class="quote-print"
+        aria-labelledby="print-title"
+        hidden
+      >
+        <header class="print-header">
+          <img
+            src="Logo/Logo%20Hedman.webp"
+            alt="Multiservicios Hedman"
+            width="5130"
+            height="2400"
+          />
+          <div>
+            <p>Multiservicios Hedman</p>
+            <p>Cel.: (+507) 6317-3442</p>
+            <p>Panamá</p>
+          </div>
+        </header>
+        <h1 id="print-title">SOLICITUD DE COTIZACIÓN</h1>
+        <div class="print-meta">
+          <span><strong>Fecha:</strong> <span id="print-date"></span></span
+          ><span><strong>Zona:</strong> <span id="print-location"></span></span>
+        </div>
+        <h2>CLIENTE</h2>
+        <p><strong>Nombre:</strong> <span id="print-name"></span></p>
+        <p><strong>Teléfono:</strong> <span id="print-phone"></span></p>
+        <p>
+          <strong>Dirección / referencia:</strong>
+          <span id="print-address"></span>
+        </p>
+        <h2>DESCRIPCIÓN DEL PROYECTO</h2>
+        <table class="print-table">
+          <thead>
+            <tr>
+              <th>Descripción</th>
+              <th>Cant.</th>
+              <th>Precio unit. prom.</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td id="print-description"></td>
+              <td id="print-quantity"></td>
+              <td id="print-unit-price">Pendiente</td>
+              <td id="print-line-total">Pendiente</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="print-totals">
+          <p>
+            <strong>Subtotal:</strong>
+            <span id="print-subtotal">Pendiente de tarifas aprobadas</span>
+          </p>
+          <p>
+            <strong>ITBMS (7 %):</strong>
+            <span id="print-tax">Pendiente · 7 %</span>
+          </p>
+          <p class="print-grand-total">
+            <strong>RANGO ESTIMADO:</strong>
+            <span id="print-total">Pendiente de tarifas aprobadas</span>
+          </p>
+        </div>
+        <p class="print-disclaimer">
+          Cotización estimada sujeta a rectificación de medidas en sitio. Los
+          precios, materiales, disponibilidad y costos de instalación se
+          confirman después de la inspección y aprobación comercial.
+        </p>
+        <p id="print-notes"></p>
+        <p class="print-thanks">¡Gracias por su preferencia!</p>
       </section>
     </main>
     <footer class="site-footer">

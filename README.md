@@ -34,7 +34,9 @@ cotizacion.html        Formulario de cotización
 css/styles.css         Estilos comunes
 js/data.js             Datos comerciales y catálogo
 js/main.js             Renderizado de servicios y menú
-js/cotizador.js        Formulario y enlace de WhatsApp
+js/cotizador.js        Formulario, vista previa e impresión
+js/quote-engine.js     Cálculos de medidas y resumen de cotización
+js/tarifas.js          Configuración de tarifas y tasa ITBMS
 tests/                 Pruebas automatizadas
 scripts/               Validaciones locales
 docs/                  Arquitectura y gobernanza
@@ -51,6 +53,16 @@ código de país. Ejemplo: `"+507 6317-3442"`.
 
 Los servicios se mantienen en el arreglo `services` de `js/data.js`. Deben
 conservarse consistentes entre el catálogo y el formulario.
+
+## Cotizador inteligente
+
+`cotizacion.html` permite detallar ventanas, puertas de baño, muebles de cocina
+y trabajos de soldadura, con una vista SVG en vivo y una solicitud lista para
+WhatsApp. La salida imprimible sigue la estructura de la plantilla Excel, pero
+no modifica el archivo `.xlsx`. No hay tarifas cargadas: el cotizador muestra
+“Pendiente” y no inventa montos. Completar tarifas aprobadas en
+`js/tarifas.js` siguiendo `docs/pricing-configuration.md`. El ITBMS se presenta
+al 7 %; los importes se calcularán solo después de disponer de un subtotal real.
 
 ## Instalación y desarrollo
 
