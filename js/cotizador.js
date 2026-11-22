@@ -6,6 +6,7 @@ import {
   calculateEstimate,
   calculateWindowArea,
   createQuoteReference,
+  createQuoteWhatsAppMessage,
   frameColors,
   getPendingEstimateBreakdown,
   getRequestedService,
@@ -14,20 +15,13 @@ import {
   serviceLabels,
 } from "./quote-engine.js";
 
-const API_URL =
-  window.location.hostname === "localhost" ||
-  window.location.hostname === "127.0.0.1"
-    ? window.location.port === "10000"
-      ? window.location.origin
-      : "http://127.0.0.1:10000"
-    : window.location.origin;
 const form = document.querySelector("#quote-form");
 const quoteError = document.querySelector("#quote-error");
 const quoteStatus = document.querySelector("#quote-status");
 const templateDialog = document.querySelector("#template-dialog");
-const pdfLoading = document.querySelector("#pdf-loading");
 const sharePdfButton = document.querySelector("#share-pdf");
 const downloadPdfButton = document.querySelector("#download-pdf");
+const quotePrint = document.querySelector("#quote-print");
 let activeQuoteReference;
 let activeQuoteSignature = "";
 
@@ -547,6 +541,7 @@ function updateFormalQuote(project) {
   );
   document.querySelector("#formal-validity-term").textContent =
     `Vigencia: 15 días calendario, hasta el ${dateFormatter.format(validUntil)}.`;
+  return quoteRef.reference;
 }
 
 function validateProject() {
@@ -569,117 +564,31 @@ function validateProject() {
   return project;
 }
 
-function buildPdfPayload(project) {
-  const data = formData();
-  return {
-    name: project.name,
-    ruc: project.ruc,
-    ruc_dv: project.rucDv,
-    client_phone: project.clientPhone,
-    email: project.email,
-    address: project.address,
-    service: project.service,
-    location: project.location,
-    width_m: project.width,
-    height_m: project.height,
-    quantity: project.quantity,
-    installation_included: project.installationIncluded,
-    frame: project.frame,
-    glass: project.glass,
-    glass_thickness_mm: Number(formValue(data, "glassThickness") || 8),
-    window_opening: formValue(data, "windowType") || "sliding",
-    door_type: formValue(data, "doorType") || "sliding",
-    hardware_finish: formValue(data, "hardware") || "chrome",
-    cabinet_material: formValue(data, "cabinetMaterial") || "melamine",
-    countertop: formValue(data, "countertop") || "none",
-    soft_close: Boolean(project.rateInputs?.softClose),
-    kitchen_l_shape: project.lShape,
-    welding_type: formValue(data, "weldProject") || "securityBars",
-    welding_finish: formValue(data, "weldFinish") || "primer",
-  };
-}
-
-async function requestOfficialPdf(project) {
-  let response;
-  try {
-    response = await fetch(`${API_URL}/api/quotes/pdf`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(buildPdfPayload(project)),
-    });
-  } catch {
-    throw new Error(
-      `No se pudo conectar con el API de cotización (${API_URL}). Verifica que esté desplegado y que CORS permita el origen ${window.location.origin}.`,
-    );
-  }
-
-  if (!response.ok) {
-    let responseBody;
-    try {
-      responseBody = await response.json();
-    } catch {
-      responseBody = null;
-    }
-    const detail =
-      typeof responseBody?.detail === "string"
-        ? responseBody.detail
-        : `El servicio respondió con el estado ${response.status}.`;
-    throw new Error(detail);
-  }
-
-  const blob = await response.blob();
-  const signature = await blob.slice(0, 5).text();
-  if (blob.type !== "application/pdf" || signature !== "%PDF-") {
-    throw new Error("El servicio no devolvió un archivo PDF válido.");
-  }
-
-  const reference = response.headers.get("X-Quote-Reference");
-  if (!reference || !/^COT-\d{4}-\d{4,}$/.test(reference)) {
-    throw new Error("El servicio no devolvió un folio oficial válido.");
-  }
-  return {
-    blob,
-    reference,
-    pdfUrl: response.headers.get("X-PDF-URL"),
-    xlsxUrl: response.headers.get("X-XLSX-URL"),
-  };
-}
-
-function setPdfLoading(isLoading) {
-  sharePdfButton.disabled = isLoading;
-  downloadPdfButton.disabled = isLoading;
-  pdfLoading.hidden = !isLoading;
-  if (isLoading) {
-    quoteStatus.textContent = "Generando cotización oficial...";
-  }
-}
-
-function getWhatsAppFallbackUrl(project, reference, pdfUrl) {
-  const details = [
-    `Folio: ${reference}`,
-    `RUC/DV: ${project.ruc}-${project.rucDv}`,
-    project.description,
-    `Zona: ${project.locationLabel}`,
-    pdfUrl
-      ? `PDF: ${new URL(pdfUrl, API_URL).href}`
-      : "Descargué el PDF de la cotización; lo adjuntaré a este mensaje.",
-    "Cotización estimada sujeta a rectificación técnica de medidas en sitio antes de fabricación.",
-  ].join("\n");
+function getWhatsAppFallbackUrl(project, reference) {
   return buildWhatsAppUrl(
     business.whatsapp,
     project.name,
     project.serviceLabel,
-    details,
+    createQuoteWhatsAppMessage(project, reference),
   );
 }
 
-function downloadBlob(blob, filename) {
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  link.click();
-  window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+function preparePrintQuote(project) {
+  const reference = updateFormalQuote(project);
+  const printableQuote = document
+    .querySelector("#official-quote")
+    .cloneNode(true);
+  printableQuote.removeAttribute("id");
+  printableQuote.querySelectorAll("[id]").forEach((element) => {
+    element.removeAttribute("id");
+  });
+  const measurement = document.createElement("p");
+  measurement.className = "official-measurement";
+  measurement.textContent = project.measurementText;
+  const items = printableQuote.querySelector(".official-items");
+  if (project.measurementText) items.before(measurement);
+  quotePrint.replaceChildren(printableQuote);
+  return reference;
 }
 
 function openCustomWhatsApp() {
@@ -706,95 +615,48 @@ function openCustomWhatsApp() {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-async function handleDownloadPdf() {
+function handleDownloadPdf() {
   const project = validateProject();
   if (!project) return;
-  setPdfLoading(true);
   try {
-    const { blob, reference, pdfUrl } = await requestOfficialPdf(project);
-    downloadBlob(blob, `Cotizacion-HEDMAN-${reference}.pdf`);
-    quoteStatus.textContent = `PDF oficial descargado: ${reference}.`;
+    const reference = preparePrintQuote(project);
+    quoteStatus.textContent =
+      `Cotización ${reference} preparada. En impresión, elige «Guardar como PDF».`;
+    window.print();
   } catch (error) {
     quoteError.textContent =
       error instanceof Error
         ? error.message
-        : "No se pudo generar la cotización oficial. Intenta nuevamente.";
+        : "No se pudo preparar la cotización para impresión.";
     quoteError.hidden = false;
-  } finally {
-    setPdfLoading(false);
   }
 }
 
-async function handleSharePdf() {
+function handleSharePdf() {
   const project = validateProject();
   if (!project) return;
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(window.navigator.userAgent);
-  const preopenedWindow = isMobile
-    ? null
-    : window.open("about:blank", "_blank");
-  if (preopenedWindow) preopenedWindow.opener = null;
-
-  setPdfLoading(true);
-  try {
-    const { blob, reference } = await requestOfficialPdf(project);
-    const filename = `Cotizacion-HEDMAN-${reference}.pdf`;
-    const file = new window.File([blob], filename, {
-      type: "application/pdf",
-    });
-    const canShareFile =
-      isMobile &&
-      typeof window.navigator.share === "function" &&
-      typeof window.navigator.canShare === "function" &&
-      window.navigator.canShare({ files: [file] });
-
-    if (canShareFile) {
-      try {
-        await window.navigator.share({
-          files: [file],
-          title: `Cotización ${reference}`,
-          text: "Cotización estimada de Multiservicios Hedman.",
-        });
-        quoteStatus.textContent =
-          "Elige WhatsApp en el menú para compartir el PDF oficial.";
-        return;
-      } catch (error) {
-        if (error instanceof Error && error.name === "AbortError") {
-          quoteStatus.textContent =
-            "Se canceló el uso del menú para compartir.";
-          return;
-        }
-      }
-    }
-
-    downloadBlob(blob, filename);
-    const whatsappUrl = getWhatsAppFallbackUrl(project, reference, pdfUrl);
-    if (!whatsappUrl) {
-      throw new Error(
-        "El número de WhatsApp comercial no está configurado correctamente.",
-      );
-    }
-    if (preopenedWindow && !preopenedWindow.closed) {
-      preopenedWindow.location.replace(whatsappUrl);
-      quoteStatus.textContent = `PDF oficial ${reference} descargado. Adjunta el archivo en WhatsApp.`;
-    } else {
-      const fallbackLink = document.querySelector("#whatsapp-fallback-link");
-      fallbackLink.href = whatsappUrl;
-      fallbackLink.hidden = false;
-      quoteStatus.textContent = `PDF oficial ${reference} descargado. Abre WhatsApp y adjúntalo.`;
-    }
-  } catch (error) {
-    if (preopenedWindow && !preopenedWindow.closed) preopenedWindow.close();
-    if (error instanceof Error && error.name === "AbortError") {
-      quoteStatus.textContent = "Se canceló la acción de compartir.";
-      return;
-    }
+  const reference = updateFormalQuote(project);
+  const whatsappUrl = getWhatsAppFallbackUrl(project, reference);
+  if (!whatsappUrl) {
     quoteError.textContent =
-      error instanceof Error
-        ? error.message
-        : "No se pudo compartir la cotización oficial. Intenta nuevamente.";
+      "El número de WhatsApp comercial no está configurado correctamente.";
     quoteError.hidden = false;
-  } finally {
-    setPdfLoading(false);
+    return;
+  }
+
+  const fallbackLink = document.querySelector("#whatsapp-fallback-link");
+  fallbackLink.href = whatsappUrl;
+  fallbackLink.hidden = true;
+  // wa.me cannot attach a binary PDF from the browser; the customer must attach the downloaded PDF manually.
+  const whatsappWindow = window.open(whatsappUrl, "_blank");
+  if (whatsappWindow) {
+    whatsappWindow.opener = null;
+    quoteStatus.textContent =
+      "Se abrió WhatsApp con el resumen. Descarga el PDF y adjúntalo manualmente al chat.";
+  } else {
+    fallbackLink.hidden = false;
+    quoteStatus.textContent =
+      "El navegador bloqueó la nueva ventana. Usa el enlace de WhatsApp y adjunta el PDF descargado.";
   }
 }
 

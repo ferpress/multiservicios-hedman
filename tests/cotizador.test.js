@@ -8,6 +8,7 @@ import {
   calculateWeldingArea,
   calculateWindowArea,
   createQuoteReference,
+  createQuoteWhatsAppMessage,
   getPendingEstimateBreakdown,
   getRequestedService,
   normalizePhone,
@@ -35,6 +36,38 @@ test("buildWhatsAppUrl creates an encoded quotation request", () => {
   assert.match(url, /^https:\/\/wa\.me\/50763173442\?text=/);
   assert.match(decodeURIComponent(url), /Ana/);
   assert.match(decodeURIComponent(url), /Medida 2 x 1/);
+});
+
+test("WhatsApp quote message includes customer details and estimate breakdown", () => {
+  const message = createQuoteWhatsAppMessage(
+    {
+      ruc: "8-123-456",
+      rucDv: "12",
+      clientPhone: "+507 6000-0000",
+      email: "ana@example.com",
+      address: "San Miguelito",
+      description: "Ventana corrediza 1.50 × 1.20 m",
+      measurementText: "Área neta: 1.80 m²",
+      locationLabel: "San Miguelito",
+      installationIncluded: true,
+      estimate: {
+        base: 165,
+        finish: 20,
+        transport: 30,
+        installation: 40,
+        subtotal: 255,
+        itbms: 17.85,
+        total: 272.85,
+      },
+    },
+    "COT-2026-0001",
+  );
+
+  assert.match(message, /RUC\/DV: 8-123-456-12/);
+  assert.match(message, /Área neta: 1\.80 m²/);
+  assert.match(message, /ITBMS \(7 %\): \$17\.85/);
+  assert.match(message, /Total estimado: \$272\.85/);
+  assert.match(message, /adjúntalo a este chat/);
 });
 
 test("legacy service links resolve to the matching quote service", () => {

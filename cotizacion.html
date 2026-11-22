@@ -981,10 +981,6 @@
                   Vista previa referencial
                 </button>
               </div>
-              <p id="pdf-loading" class="pdf-loading" role="status" hidden>
-                <span class="loading-spinner" aria-hidden="true"></span>
-                Generando cotización oficial...
-              </p>
               <a
                 id="whatsapp-fallback-link"
                 class="whatsapp-fallback-link"
@@ -992,12 +988,19 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 hidden
-                >Abrir WhatsApp para adjuntar el PDF</a
+                >Abrir WhatsApp; descarga el PDF aparte para adjuntarlo</a
               >
             </aside>
           </div>
         </div>
       </section>
+
+      <section
+        id="quote-print"
+        class="quote-print"
+        aria-label="Cotización lista para imprimir o guardar como PDF"
+        hidden
+      ></section>
 
       <dialog
         id="template-dialog"
@@ -1005,7 +1008,7 @@
         aria-label="Vista de la cotización formal"
       >
         <div class="template-dialog-toolbar">
-          <p>Vista previa referencial; el PDF oficial usa la plantilla XLSX</p>
+          <p>Vista previa de la cotización</p>
           <button
             id="close-template"
             class="button button-outline"

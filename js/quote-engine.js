@@ -75,6 +75,41 @@ export function buildWhatsAppUrl(phone, name, service, details) {
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }
 
+export function createQuoteWhatsAppMessage(project, reference) {
+  const money = (amount) =>
+    `$${new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount)}`;
+  const estimate = project.estimate;
+
+  return [
+    `Folio: ${reference}`,
+    `RUC/DV: ${project.ruc}-${project.rucDv}`,
+    `WhatsApp: ${project.clientPhone || "No indicado"}`,
+    `Correo: ${project.email || "No indicado"}`,
+    `Dirección / referencia: ${project.address || "Por confirmar"}`,
+    `Proyecto: ${project.description}`,
+    project.measurementText
+      ? `Medidas: ${project.measurementText}`
+      : "",
+    `Zona: ${project.locationLabel}`,
+    `Instalación: ${project.installationIncluded ? "Incluida" : "No incluida"}`,
+    "Desglose estimado (USD):",
+    `Material / fabricación: ${money(estimate.base)}`,
+    `Acabados y opciones: ${money(estimate.finish)}`,
+    `Transporte / flete: ${money(estimate.transport)}`,
+    `Instalación: ${money(estimate.installation)}`,
+    `Subtotal: ${money(estimate.subtotal)}`,
+    `ITBMS (7 %): ${money(estimate.itbms)}`,
+    `Total estimado: ${money(estimate.total)}`,
+    "Descarga el PDF desde el cotizador y adjúntalo a este chat.",
+    "Cotización estimada sujeta a rectificación técnica de medidas en sitio antes de fabricación.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export function getRequestedService(search, availableServices = []) {
   const requestedService = new URLSearchParams(search).get("servicio");
   if (!requestedService) return "";
