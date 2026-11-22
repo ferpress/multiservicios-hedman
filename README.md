@@ -11,10 +11,11 @@ cotización por WhatsApp.
 - JavaScript con módulos ES
 - GitHub Pages
 - WhatsApp Web
+- Google Apps Script para procesar solicitudes y generar PDF sin precios
 
-El sitio público es estático y no requiere Node.js en producción. Las
-cotizaciones de clientes se envían como solicitudes técnicas por WhatsApp; no
-se calculan ni muestran precios en el sitio.
+El sitio no requiere un servidor propio en producción. El formulario envía sus
+datos técnicos a una implementación de Google Apps Script; no calcula ni
+muestra precios en el sitio.
 
 ## Vista previa local
 
@@ -36,8 +37,9 @@ cotizacion.html        Formulario de cotización
 css/styles.css         Estilos comunes
 js/data.js             Datos comerciales y catálogo
 js/main.js             Renderizado de servicios y menú
-js/cotizador.js        Formulario, resumen técnico y WhatsApp
+js/cotizador.js        Formulario, resumen técnico, PDF y WhatsApp
 js/quote-engine.js     Conversión de medidas y mensajes de solicitud
+js/apps-script-client.js Integración del endpoint y respuesta de PDF
 seller-local/          Herramienta local de precios y PDF (no se publica)
 tests/                 Pruebas automatizadas
 scripts/               Validaciones locales
@@ -61,9 +63,18 @@ especificaciones por servicio y una vista SVG en vivo. El resumen y el mensaje
 de WhatsApp contienen únicamente los datos técnicos y de contacto. El sitio no
 carga tarifas, calcula importes ni genera una cotización con precios.
 
-El botón principal abre WhatsApp con la solicitud ya preparada. El cliente
-revisa los datos y pulsa **Enviar**. En el cliente estático no se realiza
-ninguna petición `POST`.
+Las tres acciones usan el endpoint configurado en
+`js/apps-script-client.js`. **Enviar solicitud automática** solicita el
+procesamiento por Apps Script; **Descargar PDF sin precios** descarga el PDF
+que devuelve el servicio; **Enviar por WhatsApp** descarga ese mismo archivo y
+abre un mensaje con el consecutivo para que el cliente adjunte el PDF.
+
+El endpoint debe aceptar `POST` CORS como `text/plain` y responder JSON con
+`ok`, `consecutivo` y, para las acciones de PDF, `pdfBase64` y `filename`.
+El payload contiene datos de contacto y técnicos, pero no precios. El URL del
+endpoint es visible en el JavaScript público; el Apps Script debe validar las
+solicitudes y proteger los datos recibidos. `wa.me` no adjunta archivos
+automáticamente.
 
 ## Cotización final para ventas
 

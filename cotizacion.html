@@ -570,6 +570,7 @@
                       autocomplete="tel"
                       maxlength="24"
                       placeholder="+507 6000-0000"
+                      required
                     />
                   </label>
                   <label class="quote-field">
@@ -932,14 +933,37 @@
                   <dd id="summary-address">Por completar</dd>
                 </div>
               </dl>
-              <div class="quote-preview-actions">
+              <div
+                class="quote-preview-actions"
+                id="quote-actions"
+                aria-busy="false"
+              >
                 <button
-                  id="send-request"
                   class="button button-primary"
                   type="button"
+                  data-quote-action="enviar"
                 >
-                  Enviar solicitud por WhatsApp
+                  Enviar solicitud automática
                 </button>
+                <button
+                  class="button button-outline"
+                  type="button"
+                  data-quote-action="descargar"
+                >
+                  Descargar PDF sin precios
+                </button>
+                <button
+                  class="button button-outline"
+                  type="button"
+                  data-quote-action="whatsapp"
+                >
+                  Enviar por WhatsApp
+                </button>
+                <p class="quote-action-note">
+                  Tus datos técnicos y de contacto se enviarán a Google Apps
+                  Script para procesar la solicitud. El PDF no incluye precios;
+                  para compartirlo por WhatsApp, adjunta el archivo descargado.
+                </p>
               </div>
               <a
                 id="whatsapp-fallback-link"

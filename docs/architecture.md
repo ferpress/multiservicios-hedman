@@ -8,13 +8,15 @@ y recursos comunes.
 - `index.html`: posicionamiento comercial y entrada al catálogo.
 - `servicios.html`: catálogo completo.
 - `nosotros.html`: confianza y propuesta de valor.
-- `cotizacion.html`: captura de intención y contacto por WhatsApp.
+- `cotizacion.html`: captura de datos y acciones de envío/PDF.
 - `css/styles.css`: diseño y componentes visuales comunes.
 - `js/data.js`: nombre comercial, WhatsApp y catálogo.
 - `js/main.js`: menú móvil, año dinámico y renderizado de servicios.
-- `js/cotizador.js`: formulario por pasos, vista previa técnica y solicitud de
-  WhatsApp; no calcula ni carga precios.
+- `js/cotizador.js`: formulario por pasos, vista previa técnica, descarga de
+  PDF sin precios y apertura de WhatsApp; no calcula ni carga precios.
 - `js/quote-engine.js`: conversiones geométricas y formato de la solicitud.
+- `js/apps-script-client.js`: payload técnico, envío al Apps Script configurado
+  y validación de la respuesta JSON.
 - `seller-local/ventas.html`: herramienta local separada para que ventas
   introduzca los precios y genere el PDF final.
 - `seller-local/sales-engine.js`: cálculo de totales internos a partir de los
@@ -28,9 +30,13 @@ y recursos comunes.
 1. El usuario abre `cotizacion.html` o selecciona un servicio.
 2. `main.js` carga el formulario y el catálogo.
 3. `cotizador.js` muestra un resumen técnico sin importes.
-4. El cliente pulsa enviar y revisa la solicitud prellenada en WhatsApp.
-5. Ventas copia los datos en `seller-local/ventas.html`, asigna los importes y
-   genera el documento final con la impresión del navegador.
+4. El cliente elige enviar la solicitud, descargar el PDF sin precios o
+   descargarlo y abrir WhatsApp para adjuntarlo.
+5. El navegador envía únicamente datos técnicos y de contacto a
+   `apps-script-client.js`; no comparte archivos PDF automáticamente por
+   WhatsApp.
+6. Ventas puede usar `seller-local/ventas.html` para generar una cotización con
+   precios editables, de manera independiente.
 
 ## Evolución
 

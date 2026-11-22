@@ -1,5 +1,9 @@
 import { business } from "./data.js";
 import {
+  createAppsScriptPayload,
+  requestQuoteDocument,
+} from "./apps-script-client.js";
+import {
   buildWhatsAppUrl,
   calculateAreaSquareMeters,
   calculateWindowArea,
@@ -14,7 +18,10 @@ import {
 const form = document.querySelector("#quote-form");
 const quoteError = document.querySelector("#quote-error");
 const quoteStatus = document.querySelector("#quote-status");
-const requestButton = document.querySelector("#send-request");
+const quoteActions = document.querySelector("#quote-actions");
+const actionButtons = quoteActions
+  ? [...quoteActions.querySelectorAll("[data-quote-action]")]
+  : [];
 
 function formData() {
   return new FormData(form);
@@ -339,35 +346,122 @@ function validateProject() {
   return project;
 }
 
-function handleSendRequest() {
+function downloadPdf(pdfBase64, filename) {
+  if (typeof pdfBase64 !== "string" || !pdfBase64.trim()) {
+    throw new Error("Apps Script no devolvió el PDF solicitado.");
+  }
+
+  const base64 = pdfBase64
+    .replace(/^data:application\/pdf;base64,/i, "")
+    .replace(/\s/g, "");
+  const binary = atob(base64);
+  if (!binary.startsWith("%PDF-")) {
+    throw new Error("El archivo recibido no parece ser un PDF válido.");
+  }
+
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  let safeFilename = String(filename || "cotizacion.pdf")
+    .trim()
+    .replace(/[\\/:*?"<>|]/g, "-")
+    .slice(0, 120);
+  if (!safeFilename) safeFilename = "cotizacion.pdf";
+  if (!safeFilename.toLowerCase().endsWith(".pdf")) {
+    safeFilename = `${safeFilename}.pdf`;
+  }
+
+  const pdfUrl = URL.createObjectURL(
+    new Blob([bytes], { type: "application/pdf" }),
+  );
+  const link = document.createElement("a");
+  link.href = pdfUrl;
+  link.download = safeFilename;
+  link.hidden = true;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+}
+
+async function processQuoteAction(mode) {
   const project = validateProject();
   if (!project) return;
 
-  const whatsappUrl = buildWhatsAppUrl(
-    business.whatsapp,
-    project.name,
-    project.serviceLabel,
-    createQuoteWhatsAppMessage(project),
-  );
-  if (!whatsappUrl) {
-    quoteError.textContent =
-      "El número de WhatsApp comercial no está configurado correctamente.";
-    quoteError.hidden = false;
-    return;
-  }
-
   const fallbackLink = document.querySelector("#whatsapp-fallback-link");
-  fallbackLink.href = whatsappUrl;
   fallbackLink.hidden = true;
-  const whatsappWindow = window.open(whatsappUrl, "_blank");
-  if (whatsappWindow) {
-    whatsappWindow.opener = null;
-    quoteStatus.textContent =
-      "Solicitud preparada en WhatsApp. Revisa los datos y pulsa Enviar para compartirla.";
-  } else {
-    fallbackLink.hidden = false;
-    quoteStatus.textContent =
-      "El navegador bloqueó la ventana. Usa el enlace para abrir WhatsApp y enviar tu solicitud.";
+  const whatsappWindow =
+    mode === "whatsapp" ? window.open("about:blank", "_blank") : null;
+
+  actionButtons.forEach((button) => {
+    button.disabled = true;
+  });
+  quoteActions.setAttribute("aria-busy", "true");
+  quoteStatus.textContent = "Generando consecutivo y documento PDF...";
+
+  try {
+    const data = await requestQuoteDocument(
+      createAppsScriptPayload(project, mode),
+    );
+    const consecutivo = String(data.consecutivo ?? "").trim();
+    if (!consecutivo) {
+      throw new Error("Apps Script no devolvió el consecutivo de la solicitud.");
+    }
+
+    if (mode === "descargar" || mode === "whatsapp") {
+      downloadPdf(data.pdfBase64, data.filename || `cotizacion-${consecutivo}.pdf`);
+    }
+
+    if (mode === "whatsapp") {
+      const details = [
+        `Consecutivo: ${consecutivo}`,
+        createQuoteWhatsAppMessage(project),
+        "Adjunta el PDF técnico que acabas de descargar.",
+      ].join("\n\n");
+      const whatsappUrl = buildWhatsAppUrl(
+        business.whatsapp,
+        project.name,
+        project.serviceLabel,
+        details,
+      );
+      if (!whatsappUrl) {
+        throw new Error(
+          "El número comercial de WhatsApp no está configurado correctamente.",
+        );
+      }
+
+      if (whatsappWindow) {
+        whatsappWindow.opener = null;
+        whatsappWindow.location.href = whatsappUrl;
+      } else {
+        fallbackLink.href = whatsappUrl;
+        fallbackLink.hidden = false;
+      }
+    }
+
+    const messages = {
+      enviar: `¡Listo! La solicitud ${consecutivo} se procesó correctamente.`,
+      descargar: `PDF sin precios ${consecutivo} descargado correctamente.`,
+      whatsapp: whatsappWindow
+        ? `PDF ${consecutivo} descargado. Revisa WhatsApp y adjunta el archivo.`
+        : `PDF ${consecutivo} descargado. Usa el enlace para abrir WhatsApp y adjunta el archivo.`,
+    };
+    quoteStatus.textContent = messages[mode];
+  } catch (error) {
+    if (whatsappWindow && !whatsappWindow.closed) whatsappWindow.close();
+    quoteError.textContent =
+      error instanceof Error
+        ? `No se pudo procesar la solicitud: ${error.message}`
+        : "No se pudo procesar la solicitud.";
+    quoteError.hidden = false;
+    quoteStatus.textContent = "";
+  } finally {
+    actionButtons.forEach((button) => {
+      button.disabled = false;
+    });
+    quoteActions.setAttribute("aria-busy", "false");
   }
 }
 
@@ -459,7 +553,11 @@ function initialize() {
     form.querySelector(selector).addEventListener("change", normalizeDimension);
   }
 
-  requestButton.addEventListener("click", handleSendRequest);
+  for (const button of actionButtons) {
+    button.addEventListener("click", () => {
+      void processQuoteAction(button.dataset.quoteAction);
+    });
+  }
   updatePreview();
 }
 

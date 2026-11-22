@@ -11,9 +11,15 @@ la generación de la cotización final son responsabilidades internas de ventas.
   precios, tasas ni totales.
 - El resumen técnico incluye medidas, área o longitud, cantidad,
   especificaciones, ubicación e instalación.
-- Enviar solicitud abre WhatsApp con el resumen técnico y datos de contacto
-  prellenados. El cliente confirma el envío desde WhatsApp.
-- La página pública no envía peticiones HTTP `POST` ni genera PDF.
+- «Enviar solicitud automática» envía el payload técnico y de contacto a la
+  implementación de Google Apps Script configurada; no incluye campos de
+  precios.
+- «Descargar PDF sin precios» descarga `pdfBase64` de la respuesta JSON.
+- «Enviar por WhatsApp» genera y descarga el PDF, luego abre WhatsApp con el
+  consecutivo y los datos técnicos. El cliente debe adjuntar el archivo.
+- La solicitud HTTP `POST` usa `text/plain` para evitar una preflight CORS y
+  requiere que el servicio responda JSON con `ok` y `consecutivo`; las acciones
+  de PDF requieren además `pdfBase64` y `filename`.
 - Ventas copia los datos en `seller-local/ventas.html`, introduce precio
   unitario, flete, instalación e ITBMS y puede imprimir o guardar la propuesta
   final como PDF.
@@ -24,6 +30,9 @@ la generación de la cotización final son responsabilidades internas de ventas.
 
 ## Validación
 
-Verificar el mensaje de WhatsApp y que el resumen público no incluya precios.
+Probar las acciones con respuestas simuladas, verificar que el payload no
+incluya precios y que el resumen público no los muestre. Confirmar por separado
+que el Apps Script publicado acepta la solicitud y devuelve un PDF válido; no
+enviar datos personales reales durante pruebas automatizadas.
 En ventas, comprobar los cálculos editables y usar el diálogo de impresión para
 guardar el PDF. Ejecutar pruebas, lint, formato y validación de enlaces.

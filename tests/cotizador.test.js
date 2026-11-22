@@ -10,6 +10,10 @@ import {
   getRequestedService,
   normalizePhone,
 } from "../js/quote-engine.js";
+import {
+  createAppsScriptPayload,
+  requestQuoteDocument,
+} from "../js/apps-script-client.js";
 
 test("normalizePhone removes formatting and spaces", () => {
   assert.equal(normalizePhone("+507 6317-3442"), "50763173442");
@@ -60,6 +64,80 @@ test("WhatsApp request includes technical and contact details but no prices", ()
   assert.match(message, /Cantidad: 2/);
   assert.match(message, /Zona del proyecto: San Miguelito/);
   assert.doesNotMatch(message, /\$|ITBMS|Subtotal|Total estimado|precio/i);
+});
+
+test("Apps Script payload contains customer and technical data, but no prices", () => {
+  const payload = createAppsScriptPayload(
+    {
+      serviceLabel: "Ventanas a Medida",
+      width: 1.5,
+      height: 1.2,
+      quantity: 2,
+      colorLabel: "Negro Mate",
+      description: "Ventana corrediza, vidrio templado",
+      measurementText: "Área neta: 1.80 m²",
+      name: "Ana",
+      ruc: "8-123-456",
+      rucDv: "12",
+      clientPhone: "+507 6000-0000",
+      email: "ana@example.com",
+      address: "San Miguelito",
+      locationLabel: "San Miguelito",
+      installationIncluded: true,
+    },
+    "whatsapp",
+  );
+
+  assert.equal(payload.cliente, "Ana");
+  assert.equal(payload.ruc, "8-123-456");
+  assert.equal(payload.dv, "12");
+  assert.equal(payload.enviarCorreo, true);
+  assert.equal(payload.modo, "whatsapp");
+  assert.equal("precio" in payload, false);
+  assert.equal("total" in payload, false);
+});
+
+test("Apps Script request sends JSON as a simple POST and checks the response", async () => {
+  let request;
+  const result = await requestQuoteDocument(
+    { cliente: "Ana" },
+    async (url, options) => {
+      request = { url, options };
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ ok: true, consecutivo: "COT-2026-0001" }),
+      };
+    },
+  );
+
+  assert.match(request.url, /^https:\/\/script\.google\.com\/macros\/s\//);
+  assert.equal(request.options.method, "POST");
+  assert.match(request.options.headers["Content-Type"], /^text\/plain/);
+  assert.deepEqual(JSON.parse(request.options.body), { cliente: "Ana" });
+  assert.equal(result.consecutivo, "COT-2026-0001");
+});
+
+test("Apps Script errors are surfaced to the customer flow", async () => {
+  await assert.rejects(
+    requestQuoteDocument({}, async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: false, error: "Solicitud inválida" }),
+    })),
+    /Solicitud inválida/,
+  );
+});
+
+test("Apps Script HTTP errors include the service response", async () => {
+  await assert.rejects(
+    requestQuoteDocument({}, async () => ({
+      ok: false,
+      status: 503,
+      json: async () => ({ error: "Servicio no disponible" }),
+    })),
+    /Servicio no disponible/,
+  );
 });
 
 test("legacy service links resolve to the matching quote service", () => {

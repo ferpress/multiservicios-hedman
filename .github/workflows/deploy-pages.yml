@@ -28,7 +28,13 @@ jobs:
           mkdir -p dist/js
           cp index.html servicios.html nosotros.html cotizacion.html robots.txt sitemap.xml site.webmanifest favicon.ico dist/
           cp -R css Logo dist/
-          cp js/data.js js/main.js js/cotizador.js js/quote-engine.js dist/js/
+          cp \
+            js/data.js \
+            js/main.js \
+            js/cotizador.js \
+            js/quote-engine.js \
+            js/apps-script-client.js \
+            dist/js/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
