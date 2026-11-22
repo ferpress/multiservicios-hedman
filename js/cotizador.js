@@ -1,14 +1,10 @@
 import { business } from "./data.js";
-import { quotePricing } from "./pricing-config.js";
 import {
   buildWhatsAppUrl,
   calculateAreaSquareMeters,
-  calculateEstimate,
   calculateWindowArea,
-  createQuoteReference,
   createQuoteWhatsAppMessage,
   frameColors,
-  getPendingEstimateBreakdown,
   getRequestedService,
   glassColors,
   locationLabels,
@@ -18,31 +14,7 @@ import {
 const form = document.querySelector("#quote-form");
 const quoteError = document.querySelector("#quote-error");
 const quoteStatus = document.querySelector("#quote-status");
-const templateDialog = document.querySelector("#template-dialog");
-const sharePdfButton = document.querySelector("#share-pdf");
-const downloadPdfButton = document.querySelector("#download-pdf");
-const quotePrint = document.querySelector("#quote-print");
-let activeQuoteReference;
-let activeQuoteSignature = "";
-
-const startingPrices = {
-  windows: {
-    amount: quotePricing.windows.basePerSquareMeter,
-    unit: "m²",
-  },
-  bathroom: {
-    amount: quotePricing.bathroom.basePerSquareMeter,
-    unit: "m²",
-  },
-  kitchen: {
-    amount: quotePricing.kitchen.baseCabinetPerLinearMeter,
-    unit: "m lineal",
-  },
-  welding: {
-    amount: quotePricing.welding.perSquareMeter.securityBars,
-    unit: "m²",
-  },
-};
+const requestButton = document.querySelector("#send-request");
 
 function formData() {
   return new FormData(form);
@@ -54,13 +26,6 @@ function formValue(data, name) {
 
 function checkedValue(name) {
   return form.querySelector(`input[name="${name}"]:checked`)?.value ?? "";
-}
-
-function formatCurrency(value) {
-  return `$${new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value)}`;
 }
 
 function formatMeters(value) {
@@ -118,10 +83,8 @@ function readProject() {
   const lShape = data.has("kitchenLShape");
   const softClose = data.has("softClose");
   let measure = null;
-  let unitLabel = "m²";
   let quantityLabel = "";
   let description = serviceLabels[service] ?? "Proyecto a medida";
-  let rateInputs = null;
   let measurementText = "";
 
   if (service === "windows" && dimensionsValid) {
@@ -133,13 +96,6 @@ function readProject() {
       const glassLabel = glassColors[glass]?.label ?? glassColors.clear.label;
       const opening = formValue(data, "windowType");
       const openingLabel = opening === "hinged" ? "batiente" : "corrediza";
-      rateInputs = {
-        area: measure,
-        unitCount: measure,
-        opening,
-        frame,
-        glass,
-      };
       description = `Ventana ${openingLabel} de aluminio ${colorLabel}, vidrio ${glassLabel} ${formValue(data, "glassThickness")} mm, ${formatMeters(width)} × ${formatMeters(height)} · ${quantity} unidad${quantity === 1 ? "" : "es"}`;
       measurementText = `Área neta: ${area.netArea.toFixed(2)} m² · facturable: ${measure.toFixed(2)} m² (mínimo 1.00 m² por unidad)`;
     }
@@ -150,23 +106,11 @@ function readProject() {
     const door = formValue(data, "doorType");
     const doorLabel = door === "hinged" ? "batiente" : "corrediza";
     measure = Math.max(netArea, 1) * quantity;
-    unitLabel = "m²";
     quantityLabel = `${measure.toFixed(2)} m²`;
-    rateInputs = {
-      area: measure,
-      unitCount: measure,
-      quantity,
-      thickness: formValue(data, "glassThickness"),
-      door,
-      hardware: formValue(data, "hardware"),
-      glass,
-      frame,
-    };
     description = `Puerta de baño ${doorLabel}, vidrio ${glassLabel} ${formValue(data, "glassThickness")} mm, herrajes ${formValue(data, "hardware") === "black" ? "negro mate" : "cromados"}, acabado ${colorLabel}, ${formatMeters(width)} × ${formatMeters(height)} · ${quantity} unidad${quantity === 1 ? "" : "es"}`;
     measurementText = `Área por unidad: ${netArea.toFixed(2)} m² · área facturable mínima: 1.00 m² por unidad`;
   } else if (service === "kitchen" && dimensionsValid) {
     measure = width * quantity;
-    unitLabel = "ml";
     quantityLabel = `${measure.toFixed(2)} ml`;
     const material = formValue(data, "cabinetMaterial");
     const materialLabels = {
@@ -181,22 +125,12 @@ function readProject() {
       granite: "sobrecubierta de granito",
       quartz: "sobrecubierta de cuarzo",
     };
-    rateInputs = {
-      baseMeters: measure,
-      upperMeters: 0,
-      unitCount: measure,
-      material,
-      countertop,
-      softClose,
-      frame,
-    };
     const softCloseLabel = softClose ? "cierre lento" : "cierre estándar";
     description = `Muebles de cocina ${materialLabels[material]}, acabado ${colorLabel}, ${countertopLabels[countertop]} · ${measure.toFixed(2)} ml${lShape ? " · diseño en L (personalizado)" : ""}`;
     description = `${description} · ${softCloseLabel}`;
     measurementText = `${measure.toFixed(2)} m lineales aproximados`;
   } else if (service === "welding" && dimensionsValid) {
     measure = width * height * quantity;
-    unitLabel = "m²";
     quantityLabel = `${measure.toFixed(2)} m²`;
     const projectType = formValue(data, "weldProject");
     const projectLabels = {
@@ -210,32 +144,14 @@ function readProject() {
       finish === "enamel"
         ? "esmalte / acabado electrostático"
         : "imprimación anticorrosiva";
-    rateInputs = {
-      measure,
-      unitCount: measure,
-      projectType,
-      finish,
-      frame,
-    };
     description = `Soldadura: ${projectLabels[projectType]}, ${formatMeters(width)} × ${formatMeters(height)}, ${finishLabel}, color ${colorLabel} · ${quantity} unidad${quantity === 1 ? "" : "es"}`;
     measurementText = `Área aproximada: ${measure.toFixed(2)} m²`;
   } else if (service === "kitchen") {
     description = "Muebles de cocina a medida";
-    measurementText = "Ingresa una longitud válida para calcular el estimado.";
+    measurementText = "Completa una longitud válida para mostrar el área.";
   } else if (service) {
-    measurementText = "Ingresa dimensiones válidas para calcular el estimado.";
+    measurementText = "Completa las dimensiones para mostrar el área.";
   }
-
-  const customRequired =
-    (service !== "kitchen" && (width > 3 || height > 2.6)) ||
-    (service === "kitchen" && (width > 3 || lShape));
-  const estimate =
-    dimensionsValid && !customRequired && location && rateInputs
-      ? calculateEstimate(
-          { service, location, rateInputs, installationIncluded },
-          quotePricing,
-        )
-      : getPendingEstimateBreakdown();
 
   return {
     service,
@@ -243,7 +159,6 @@ function readProject() {
     width,
     height,
     quantity,
-    unitLabel,
     measure,
     quantityLabel,
     description,
@@ -260,23 +175,9 @@ function readProject() {
     clientPhone: formValue(data, "clientPhone"),
     email: formValue(data, "email"),
     address: formValue(data, "address"),
-    details: formValue(data, "details"),
     lShape,
     dimensionsValid,
-    customRequired,
-    estimate,
-    rateInputs,
   };
-}
-
-function updateStartingPrices() {
-  for (const tag of document.querySelectorAll("[data-starting-price]")) {
-    const service = tag.dataset.startingPrice;
-    const price = startingPrices[service];
-    if (price) {
-      tag.textContent = `Desde ${formatCurrency(price.amount)} / ${price.unit}`;
-    }
-  }
 }
 
 function setSvgRect(element, x, y, width, height) {
@@ -397,246 +298,57 @@ function updatePreviewDrawing(project) {
     .setAttribute("stroke", weldColor);
 }
 
-function setBreakdown(estimate, project) {
-  const status = document.querySelector(".quote-price-status strong");
-  const statusNote = document.querySelector(".quote-price-status span");
-  if (project.customRequired) {
-    status.textContent = "Cotización personalizada requerida";
-    statusNote.textContent =
-      "Un asesor técnico debe revisar este proyecto antes de calcular precios.";
-  } else if (!project.dimensionsValid || !project.location) {
-    status.textContent = "Completa medidas y zona";
-    statusNote.textContent =
-      "Los importes aparecerán al completar las opciones requeridas.";
-  } else {
-    status.textContent = "Estimado referencial en USD";
-    statusNote.textContent =
-      "Precios demostrativos sujetos a rectificación técnica y confirmación comercial.";
-  }
-
-  const breakdown = {
-    base: estimate.base,
-    finish: estimate.finish,
-    transport: estimate.transport,
-    install: estimate.installation,
-    subtotal: estimate.subtotal,
-    tax: estimate.itbms,
-    total: estimate.total,
+function updateRequestSummary(project) {
+  const values = {
+    dimensions:
+      project.service === "kitchen"
+        ? `${formatMeters(project.width)} lineales`
+        : `${formatMeters(project.width)} × ${formatMeters(project.height)}`,
+    quantity: String(project.quantity || "—"),
+    measurement:
+      project.measurementText || "Completa las medidas del proyecto",
+    description: project.description,
+    location: project.locationLabel,
+    installation: project.installationIncluded ? "Solicitada" : "No solicitada",
+    customer: project.name || "Por completar",
+    ruc: project.ruc
+      ? `${project.ruc}${project.rucDv ? ` / ${project.rucDv}` : ""}`
+      : "Por completar",
+    phone: project.clientPhone || "No indicado",
+    email: project.email || "No indicado",
+    address: project.address || "Por completar",
   };
-  for (const [key, value] of Object.entries(breakdown)) {
-    document.querySelector(`#breakdown-${key}`).textContent =
-      value === null
-        ? project.customRequired
-          ? "Personalizada"
-          : "—"
-        : key === "install" && !project.installationIncluded
-          ? "No incluida"
-          : formatCurrency(value);
+
+  for (const [key, value] of Object.entries(values)) {
+    document.querySelector(`#summary-${key}`).textContent = value;
   }
-}
-
-function updatePreview() {
-  setServiceFields(checkedValue("service"));
-  const project = readProject();
-  const service = project.service;
-  document.querySelector("#preview-title").textContent = project.serviceLabel;
-  document.querySelector("#preview-caption").textContent = project.location
-    ? project.locationLabel
-    : "Selecciona una zona para calcular transporte e instalación.";
-  document.querySelector("#preview-measure").textContent =
-    project.measurementText;
-  document.querySelector("#measure-badge").textContent =
-    service === "kitchen"
-      ? `Longitud: ${project.measure?.toFixed(2) ?? "—"} ml`
-      : `Área: ${project.measure?.toFixed(2) ?? "—"} m²`;
-  document.querySelector("#custom-quote-alert").hidden =
-    !project.customRequired;
-
-  const estimate = project.estimate;
-  setBreakdown(estimate, project);
-  updatePreviewDrawing(project);
-  return project;
-}
-
-function nextQuoteReference(project) {
-  const signature = JSON.stringify(project);
-  if (activeQuoteReference && activeQuoteSignature === signature) {
-    return activeQuoteReference;
-  }
-  const storage = {
-    getItem: (key) => window.localStorage.getItem(key),
-    setItem: (key, value) => window.localStorage.setItem(key, value),
-  };
-  activeQuoteReference = createQuoteReference(storage);
-  activeQuoteSignature = signature;
-  if (!activeQuoteReference.persistent) {
-    quoteStatus.textContent =
-      "El navegador no permitió guardar el consecutivo; este folio es temporal.";
-  }
-  return activeQuoteReference;
-}
-
-function updateFormalQuote(project) {
-  const now = new Date();
-  const validUntil = new Date(now);
-  validUntil.setDate(validUntil.getDate() + 15);
-  const quoteRef = nextQuoteReference(project);
-  const dateFormatter = new Intl.DateTimeFormat("es-PA", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-  document.querySelector("#formal-reference").textContent = quoteRef.reference;
-  document.querySelector("#formal-date").textContent =
-    dateFormatter.format(now);
-  document.querySelector("#formal-validity").textContent =
-    dateFormatter.format(validUntil);
-  document.querySelector("#formal-name").textContent =
-    project.name || "Por confirmar";
-  document.querySelector("#formal-ruc").textContent =
-    `${project.ruc || "Por confirmar"}${project.rucDv ? `-${project.rucDv}` : ""}`;
-  document.querySelector("#formal-phone").textContent =
-    project.clientPhone || "No indicado";
-  document.querySelector("#formal-email").textContent =
-    project.email || "No indicado";
-  document.querySelector("#formal-location").textContent =
-    project.locationLabel;
-  document.querySelector("#formal-address").textContent =
-    project.address || "Por confirmar";
-  document.querySelector("#formal-product-description").textContent =
-    project.description;
-  document.querySelector("#formal-product-quantity").textContent =
-    project.quantityLabel;
-  const estimate = project.estimate;
-  document.querySelector("#formal-product-unit").textContent = formatCurrency(
-    estimate.unitPrice,
-  );
-  document.querySelector("#formal-product-total").textContent = formatCurrency(
-    estimate.productTotal,
-  );
-  document.querySelector("#formal-freight-location").textContent =
-    project.locationLabel;
-  document.querySelector("#formal-freight-unit").textContent = formatCurrency(
-    estimate.transport,
-  );
-  document.querySelector("#formal-freight-total").textContent = formatCurrency(
-    estimate.transport,
-  );
-  document.querySelector("#formal-install-row").hidden =
-    !project.installationIncluded;
-  document.querySelector("#formal-install-unit").textContent = formatCurrency(
-    estimate.installation,
-  );
-  document.querySelector("#formal-install-total").textContent = formatCurrency(
-    estimate.installation,
-  );
-  document.querySelector("#formal-subtotal").textContent = formatCurrency(
-    estimate.subtotal,
-  );
-  document.querySelector("#formal-tax").textContent = formatCurrency(
-    estimate.itbms,
-  );
-  document.querySelector("#formal-total").textContent = formatCurrency(
-    estimate.total,
-  );
-  document.querySelector("#formal-validity-term").textContent =
-    `Vigencia: 15 días calendario, hasta el ${dateFormatter.format(validUntil)}.`;
-  return quoteRef.reference;
 }
 
 function validateProject() {
   quoteError.hidden = true;
   quoteError.textContent = "";
   if (!form.reportValidity()) return null;
+
   const project = updatePreview();
-  if (project.customRequired) {
+  if (!project.dimensionsValid) {
     quoteError.textContent =
-      "Este proyecto requiere atención personalizada; usa el botón de WhatsApp para continuar.";
-    quoteError.hidden = false;
-    return null;
-  }
-  if (!project.estimate.ready) {
-    quoteError.textContent =
-      "Completa las dimensiones y selecciona una zona para generar la cotización.";
+      "Revisa las medidas y la cantidad para continuar con la solicitud.";
     quoteError.hidden = false;
     return null;
   }
   return project;
 }
 
-function getWhatsAppFallbackUrl(project, reference) {
-  return buildWhatsAppUrl(
+function handleSendRequest() {
+  const project = validateProject();
+  if (!project) return;
+
+  const whatsappUrl = buildWhatsAppUrl(
     business.whatsapp,
     project.name,
     project.serviceLabel,
-    createQuoteWhatsAppMessage(project, reference),
+    createQuoteWhatsAppMessage(project),
   );
-}
-
-function preparePrintQuote(project) {
-  const reference = updateFormalQuote(project);
-  const printableQuote = document
-    .querySelector("#official-quote")
-    .cloneNode(true);
-  printableQuote.removeAttribute("id");
-  printableQuote.querySelectorAll("[id]").forEach((element) => {
-    element.removeAttribute("id");
-  });
-  const measurement = document.createElement("p");
-  measurement.className = "official-measurement";
-  measurement.textContent = project.measurementText;
-  const items = printableQuote.querySelector(".official-items");
-  if (project.measurementText) items.before(measurement);
-  quotePrint.replaceChildren(printableQuote);
-  return reference;
-}
-
-function openCustomWhatsApp() {
-  const project = updatePreview();
-  const message = [
-    "Solicito asesoría para una cotización personalizada.",
-    project.description,
-    `Zona: ${project.locationLabel}`,
-    `Referencia: ${project.address || "Por confirmar"}`,
-    "Este proyecto requiere revisión técnica antes de definir el precio.",
-  ].join("\n");
-  const url = buildWhatsAppUrl(
-    business.whatsapp,
-    project.name || "Cliente",
-    project.serviceLabel,
-    message,
-  );
-  if (!url) {
-    quoteError.textContent =
-      "El número de WhatsApp comercial no está configurado correctamente.";
-    quoteError.hidden = false;
-    return;
-  }
-  window.open(url, "_blank", "noopener,noreferrer");
-}
-
-function handleDownloadPdf() {
-  const project = validateProject();
-  if (!project) return;
-  try {
-    const reference = preparePrintQuote(project);
-    quoteStatus.textContent =
-      `Cotización ${reference} preparada. En impresión, elige «Guardar como PDF».`;
-    window.print();
-  } catch (error) {
-    quoteError.textContent =
-      error instanceof Error
-        ? error.message
-        : "No se pudo preparar la cotización para impresión.";
-    quoteError.hidden = false;
-  }
-}
-
-function handleSharePdf() {
-  const project = validateProject();
-  if (!project) return;
-  const reference = updateFormalQuote(project);
-  const whatsappUrl = getWhatsAppFallbackUrl(project, reference);
   if (!whatsappUrl) {
     quoteError.textContent =
       "El número de WhatsApp comercial no está configurado correctamente.";
@@ -647,24 +359,37 @@ function handleSharePdf() {
   const fallbackLink = document.querySelector("#whatsapp-fallback-link");
   fallbackLink.href = whatsappUrl;
   fallbackLink.hidden = true;
-  // wa.me cannot attach a binary PDF from the browser; the customer must attach the downloaded PDF manually.
   const whatsappWindow = window.open(whatsappUrl, "_blank");
   if (whatsappWindow) {
     whatsappWindow.opener = null;
     quoteStatus.textContent =
-      "Se abrió WhatsApp con el resumen. Descarga el PDF y adjúntalo manualmente al chat.";
+      "Solicitud preparada en WhatsApp. Revisa los datos y pulsa Enviar para compartirla.";
   } else {
     fallbackLink.hidden = false;
     quoteStatus.textContent =
-      "El navegador bloqueó la nueva ventana. Usa el enlace de WhatsApp y adjunta el PDF descargado.";
+      "El navegador bloqueó la ventana. Usa el enlace para abrir WhatsApp y enviar tu solicitud.";
   }
 }
 
-function openFormalPreview() {
-  const project = validateProject();
-  if (!project) return;
-  updateFormalQuote(project);
-  if (!templateDialog.open) templateDialog.showModal();
+function updatePreview() {
+  quoteError.hidden = true;
+  quoteError.textContent = "";
+  quoteStatus.textContent = "";
+  setServiceFields(checkedValue("service"));
+  const project = readProject();
+  document.querySelector("#preview-title").textContent = project.serviceLabel;
+  document.querySelector("#preview-caption").textContent = project.location
+    ? project.locationLabel
+    : "Completa los datos para enviar tu solicitud.";
+  document.querySelector("#preview-measure").textContent =
+    project.measurementText;
+  document.querySelector("#measure-badge").textContent =
+    project.service === "kitchen"
+      ? `Longitud: ${project.measure?.toFixed(2) ?? "—"} ml`
+      : `Área: ${project.measure?.toFixed(2) ?? "—"} m²`;
+  updateRequestSummary(project);
+  updatePreviewDrawing(project);
+  return project;
 }
 
 function syncDimensions(event) {
@@ -711,7 +436,6 @@ function updateQuantity(event) {
 
 function initialize() {
   if (!form) return;
-  updateStartingPrices();
   const requestedService = getRequestedService(window.location.search, []);
   if (requestedService) {
     const serviceRadio = form.querySelector(
@@ -735,24 +459,7 @@ function initialize() {
     form.querySelector(selector).addEventListener("change", normalizeDimension);
   }
 
-  document
-    .querySelector("#share-pdf")
-    .addEventListener("click", handleSharePdf);
-  document
-    .querySelector("#download-pdf")
-    .addEventListener("click", handleDownloadPdf);
-  document
-    .querySelector("#view-formal-template")
-    .addEventListener("click", openFormalPreview);
-  document
-    .querySelector("#custom-whatsapp")
-    .addEventListener("click", openCustomWhatsApp);
-  document.querySelector("#close-template").addEventListener("click", () => {
-    templateDialog.close();
-  });
-  templateDialog.addEventListener("click", (event) => {
-    if (event.target === templateDialog) templateDialog.close();
-  });
+  requestButton.addEventListener("click", handleSendRequest);
   updatePreview();
 }
 

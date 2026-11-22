@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Herramienta local de ventas | Multiservicios Hedman</title>
+    <link rel="stylesheet" href="../css/styles.css" />
+    <link rel="stylesheet" href="ventas.css" />
+    <script type="module" src="ventas.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="site-header">
+      <nav class="navigation container" aria-label="Navegación interna">
+        <a
+          class="brand-link"
+          href="../index.html"
+          aria-label="Multiservicios Hedman, inicio"
+        >
+          <img
+            src="../Logo/Logo%20Hedman.webp"
+            alt="Multiservicios Hedman"
+            width="5130"
+            height="2400"
+          />
+        </a>
+        <span class="seller-badge">Herramienta local de ventas</span>
+      </nav>
+    </header>
+    <main id="contenido">
+      <section class="page-hero page-hero-compact">
+        <div class="container page-hero-inner">
+          <p class="eyebrow">Uso interno · no publicar</p>
+          <h1>Preparar cotización</h1>
+          <p>
+            Copia los datos técnicos recibidos por WhatsApp, asigna los precios
+            y genera el PDF final desde este equipo.
+          </p>
+        </div>
+      </section>
+      <section class="seller-section">
+        <div class="container">
+          <p class="seller-notice" role="note">
+            Esta herramienta no guarda ni envía datos. La información y los
+            precios solo permanecen en esta sesión del navegador. No publiques
+            esta carpeta ni la abras desde un sitio público.
+          </p>
+          <div class="seller-layout">
+            <form id="seller-form" class="seller-card">
+              <h2>Datos del cliente y proyecto</h2>
+              <div class="seller-fields">
+                <label class="seller-field">
+                  Folio (opcional)
+                  <input name="reference" maxlength="40" />
+                </label>
+                <label class="seller-field">
+                  Nombre / razón social
+                  <input name="name" maxlength="120" required />
+                </label>
+                <label class="seller-field">
+                  RUC
+                  <input name="ruc" maxlength="30" required />
+                </label>
+                <label class="seller-field">
+                  DV
+                  <input name="dv" maxlength="10" required />
+                </label>
+                <label class="seller-field">
+                  WhatsApp
+                  <input name="phone" type="tel" maxlength="30" />
+                </label>
+                <label class="seller-field">
+                  Correo
+                  <input name="email" type="email" maxlength="120" />
+                </label>
+                <label class="seller-field seller-field-wide">
+                  Corregimiento / referencia
+                  <input name="address" maxlength="180" required />
+                </label>
+                <label class="seller-field seller-field-wide">
+                  Descripción y especificaciones técnicas
+                  <textarea name="description" rows="4" required></textarea>
+                </label>
+                <label class="seller-field">
+                  Cantidad
+                  <input
+                    name="quantity"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value="1"
+                    required
+                  />
+                </label>
+                <label class="seller-field">
+                  Unidad
+                  <select name="unit">
+                    <option>unidad</option>
+                    <option>m²</option>
+                    <option>m lineal</option>
+                    <option>servicio</option>
+                  </select>
+                </label>
+              </div>
+              <h2>Precios internos</h2>
+              <div class="seller-fields">
+                <label class="seller-field">
+                  Precio unitario (USD)
+                  <input
+                    name="unitPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                    required
+                  />
+                </label>
+                <label class="seller-field">
+                  Transporte / flete (USD)
+                  <input
+                    name="freight"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                    required
+                  />
+                </label>
+                <label class="seller-field">
+                  Instalación (USD)
+                  <input
+                    name="installation"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value="0"
+                    required
+                  />
+                </label>
+                <label class="seller-field">
+                  ITBMS (%)
+                  <input
+                    name="taxRate"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    value="7"
+                    required
+                  />
+                </label>
+              </div>
+              <button class="button button-primary" type="button" id="print-quote">
+                Generar / guardar PDF
+              </button>
+              <p id="seller-status" class="seller-status" role="status" aria-live="polite"></p>
+            </form>
+
+            <aside class="seller-card seller-totals" aria-label="Totales internos">
+              <p class="eyebrow">Vista interna</p>
+              <h2>Resumen de precios</h2>
+              <dl>
+                <div><dt>Productos / servicios</dt><dd id="product-total">$0.00</dd></div>
+                <div><dt>Transporte / flete</dt><dd id="freight-total">$0.00</dd></div>
+                <div><dt>Instalación</dt><dd id="installation-total">$0.00</dd></div>
+                <div><dt>Subtotal</dt><dd id="subtotal">$0.00</dd></div>
+                <div><dt>ITBMS</dt><dd id="tax-total">$0.00</dd></div>
+                <div class="seller-grand-total"><dt>Total</dt><dd id="grand-total">$0.00</dd></div>
+              </dl>
+              <p class="seller-hint">
+                El total usa cantidad × precio unitario, más flete e instalación;
+                el ITBMS se aplica al subtotal.
+              </p>
+            </aside>
+          </div>
+        </div>
+      </section>
+      <section id="seller-print" class="seller-print" hidden></section>
+    </main>
+  </body>
+</html>

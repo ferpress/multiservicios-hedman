@@ -12,36 +12,29 @@ y recursos comunes.
 - `css/styles.css`: diseño y componentes visuales comunes.
 - `js/data.js`: nombre comercial, WhatsApp y catálogo.
 - `js/main.js`: menú móvil, año dinámico y renderizado de servicios.
-- `js/cotizador.js`: formulario por pasos, vista previa SVG, estimado local,
-  solicitud del PDF oficial y flujo de WhatsApp.
-- `js/quote-engine.js`: conversiones de medidas, precios, impuestos y folios.
-- `js/pricing-config.js`: precios demostrativos, recargos logísticos e ITBMS.
-- `backend-python/app.py`: API FastAPI independiente con CORS restringido a los
-  dos orígenes públicos.
-- `backend-python/pricing_engine.py`: recálculo y validación de tarifas del lado
-  del servidor.
-- `backend-python/template_renderer.py`: actualización de valores en la copia
-  saneada de la hoja XLSX y conversión PDF con LibreOffice.
-- `backend-python/quote_store.py`: consecutivo anual SQLite con ruta persistente
-  configurable.
+- `js/cotizador.js`: formulario por pasos, vista previa técnica y solicitud de
+  WhatsApp; no calcula ni carga precios.
+- `js/quote-engine.js`: conversiones geométricas y formato de la solicitud.
+- `seller-local/ventas.html`: herramienta local separada para que ventas
+  introduzca los precios y genere el PDF final.
+- `seller-local/sales-engine.js`: cálculo de totales internos a partir de los
+  precios digitados por ventas.
+- `.github/workflows/deploy-pages.yml`: publica explícitamente solo los
+  archivos del sitio; excluye la herramienta local, el backend y los archivos
+  internos.
 
 ## Flujo de cotización
 
 1. El usuario abre `cotizacion.html` o selecciona un servicio.
 2. `main.js` carga el formulario y el catálogo.
-3. `cotizador.js` calcula el estimado local y envía al API los campos del
-   proyecto, no el total calculado por el cliente.
-4. FastAPI valida y recalcula los precios, asigna un folio, rellena una copia
-   saneada de la plantilla XLSX y usa LibreOffice para generar el PDF.
-5. El navegador recibe el PDF binario y lo comparte mediante Web Share en
-   móviles compatibles o lo descarga y prepara WhatsApp en escritorio.
+3. `cotizador.js` muestra un resumen técnico sin importes.
+4. El cliente pulsa enviar y revisa la solicitud prellenada en WhatsApp.
+5. Ventas copia los datos en `seller-local/ventas.html`, asigna los importes y
+   genera el documento final con la impresión del navegador.
 
 ## Evolución
 
-Las tarifas de demostración se mantienen en `js/pricing-config.js` para la
-estimación instantánea y en `backend-python/pricing_engine.py` para el cálculo
-oficial. Deben mantenerse sincronizadas y ser aprobadas comercialmente. El
-ITBMS de 7 % se calcula en ambos lados.
-
-El sitio estático puede publicarse en GitHub Pages. El API Python puede ejecutarse
-localmente o en cualquier servidor estándar compatible con FastAPI y LibreOffice.
+La herramienta local no incluye precios predeterminados ni persiste información.
+No está protegida por autenticación y no debe publicarse: solo se ejecuta en el
+equipo de ventas mediante un servidor local. GitHub Pages recibe una lista
+permitida de archivos en lugar de la raíz completa del repositorio.

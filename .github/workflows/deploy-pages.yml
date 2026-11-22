@@ -23,8 +23,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Prepare public GitHub Pages files
+        run: |
+          mkdir -p dist/js
+          cp index.html servicios.html nosotros.html cotizacion.html robots.txt sitemap.xml site.webmanifest favicon.ico dist/
+          cp -R css Logo dist/
+          cp js/data.js js/main.js js/cotizador.js js/quote-engine.js dist/js/
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: dist
       - id: deployment
         uses: actions/deploy-pages@v4

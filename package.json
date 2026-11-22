@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
-    "lint": "eslint js tests",
-    "format": "prettier --write \"*.html\" \"css/**/*.css\" \"js/**/*.js\" \"tests/**/*.js\"",
-    "format:check": "prettier --check \"*.html\" \"css/**/*.css\" \"js/**/*.js\" \"tests/**/*.js\"",
+    "lint": "eslint js tests seller-local",
+    "format": "prettier --write \"*.html\" \"css/**/*.css\" \"js/**/*.js\" \"tests/**/*.js\" \"seller-local/**/*.{html,css,js}\"",
+    "format:check": "prettier --check \"*.html\" \"css/**/*.css\" \"js/**/*.js\" \"tests/**/*.js\" \"seller-local/**/*.{html,css,js}\"",
     "validate:links": "node scripts/check-links.js"
   },
   "devDependencies": {

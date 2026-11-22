@@ -3,17 +3,13 @@ import assert from "node:assert/strict";
 import {
   buildWhatsAppUrl,
   calculateAreaSquareMeters,
-  calculateEstimate,
   calculateKitchenLinearMeters,
   calculateWeldingArea,
   calculateWindowArea,
-  createQuoteReference,
   createQuoteWhatsAppMessage,
-  getPendingEstimateBreakdown,
   getRequestedService,
   normalizePhone,
 } from "../js/quote-engine.js";
-import { quotePricing } from "../js/pricing-config.js";
 
 test("normalizePhone removes formatting and spaces", () => {
   assert.equal(normalizePhone("+507 6317-3442"), "50763173442");
@@ -38,36 +34,32 @@ test("buildWhatsAppUrl creates an encoded quotation request", () => {
   assert.match(decodeURIComponent(url), /Medida 2 x 1/);
 });
 
-test("WhatsApp quote message includes customer details and estimate breakdown", () => {
+test("WhatsApp request includes technical and contact details but no prices", () => {
   const message = createQuoteWhatsAppMessage(
     {
+      service: "windows",
+      serviceLabel: "Ventanas a Medida",
       ruc: "8-123-456",
       rucDv: "12",
       clientPhone: "+507 6000-0000",
       email: "ana@example.com",
       address: "San Miguelito",
-      description: "Ventana corrediza 1.50 × 1.20 m",
+      description: "Ventana corrediza, vidrio templado",
+      width: 1.5,
+      height: 1.2,
+      quantity: 2,
       measurementText: "Área neta: 1.80 m²",
       locationLabel: "San Miguelito",
       installationIncluded: true,
-      estimate: {
-        base: 165,
-        finish: 20,
-        transport: 30,
-        installation: 40,
-        subtotal: 255,
-        itbms: 17.85,
-        total: 272.85,
-      },
     },
-    "COT-2026-0001",
   );
 
-  assert.match(message, /RUC\/DV: 8-123-456-12/);
+  assert.match(message, /RUC: 8-123-456/);
+  assert.match(message, /DV: 12/);
   assert.match(message, /Área neta: 1\.80 m²/);
-  assert.match(message, /ITBMS \(7 %\): \$17\.85/);
-  assert.match(message, /Total estimado: \$272\.85/);
-  assert.match(message, /adjúntalo a este chat/);
+  assert.match(message, /Cantidad: 2/);
+  assert.match(message, /Zona del proyecto: San Miguelito/);
+  assert.doesNotMatch(message, /\$|ITBMS|Subtotal|Total estimado|precio/i);
 });
 
 test("legacy service links resolve to the matching quote service", () => {
@@ -99,134 +91,16 @@ test("windows apply a one square meter minimum to each unit", () => {
   assert.equal(calculateAreaSquareMeters(0, 1.9), null);
 });
 
-test("bathroom glass applies the minimum billable area and hardware costs", () => {
-  const project = {
-    service: "bathroom",
-    location: "center",
-    installationIncluded: true,
-    rateInputs: {
-      area: Math.max(calculateAreaSquareMeters(0.6, 0.6), 1) * 2,
-      unitCount: 2,
-      quantity: 2,
-      thickness: "10",
-      door: "hinged",
-      hardware: "black",
-      glass: "tempered",
-      frame: "black",
-    },
-  };
-  const estimate = calculateEstimate(project, quotePricing);
-  assert.equal(estimate.ready, true);
-  assert.equal(estimate.base, 330);
-  assert.equal(estimate.finish, 345.5);
-  assert.equal(estimate.transport, 27);
-  assert.equal(estimate.installation, 40);
-  assert.equal(estimate.total, 794.48);
-});
-
-test("kitchen linear prices include material, finish, and countertop upgrades", () => {
+test("kitchen linear measurements include base and upper cabinets", () => {
   assert.deepEqual(calculateKitchenLinearMeters(2.5, 3), {
     base: 2.5,
     upper: 3,
     total: 5.5,
   });
   assert.equal(calculateKitchenLinearMeters(0, 0), null);
-  const estimate = calculateEstimate(
-    {
-      service: "kitchen",
-      location: "center",
-      installationIncluded: true,
-      rateInputs: {
-        baseMeters: 1.5,
-        upperMeters: 0,
-        unitCount: 1.5,
-        material: "rh",
-        countertop: "laminate",
-        softClose: true,
-        frame: "white",
-      },
-    },
-    quotePricing,
-  );
-  assert.equal(estimate.ready, true);
-  assert.equal(estimate.productTotal, 525);
-  assert.equal(estimate.installation, 30);
 });
 
-test("welding estimates vary by project, paint, color, and location", () => {
+test("welding area accounts for dimensions and quantity", () => {
   assert.equal(calculateWeldingArea(2, 1.5, 3), 9);
   assert.equal(calculateWeldingArea(0, 1.5, 3), null);
-  const estimate = calculateEstimate(
-    {
-      service: "welding",
-      location: "center",
-      installationIncluded: false,
-      rateInputs: {
-        measure: 1.44,
-        unitCount: 1.44,
-        projectType: "securityBars",
-        finish: "primer",
-        frame: "black",
-      },
-    },
-    quotePricing,
-  );
-  assert.equal(estimate.ready, true);
-  assert.equal(estimate.productTotal, 175.68);
-  assert.equal(estimate.installation, 0);
-  assert.equal(estimate.total, 213.27);
-});
-
-test("an incomplete location never produces a zero-looking estimate", () => {
-  const pending = getPendingEstimateBreakdown();
-  assert.equal(pending.ready, false);
-  assert.equal(pending.subtotal, null);
-  assert.equal(
-    calculateEstimate(
-      {
-        service: "windows",
-        location: "",
-        rateInputs: {
-          area: 2,
-          unitCount: 2,
-          opening: "sliding",
-          frame: "natural",
-          glass: "clear",
-        },
-      },
-      quotePricing,
-    ).ready,
-    false,
-  );
-});
-
-test("quote references increment per year in local storage", () => {
-  const values = new Map();
-  const storage = {
-    getItem: (key) => values.get(key) ?? null,
-    setItem: (key, value) => values.set(key, value),
-  };
-  const date = new Date("2026-11-21T12:00:00");
-  assert.deepEqual(createQuoteReference(storage, date), {
-    reference: "COT-2026-0001",
-    persistent: true,
-  });
-  assert.deepEqual(createQuoteReference(storage, date), {
-    reference: "COT-2026-0002",
-    persistent: true,
-  });
-});
-
-test("quote references fall back to a timestamp when storage is unavailable", () => {
-  const blockedStorage = {
-    getItem() {
-      throw new Error("storage blocked");
-    },
-    setItem() {},
-  };
-  const date = new Date("2026-11-21T12:00:00");
-  assert.deepEqual(createQuoteReference(blockedStorage, date), {
-    reference: `COT-2026-${date.getTime()}`,
-    persistent: false,
-  });
 });

@@ -17,26 +17,18 @@ export const frameColors = {
   natural: {
     label: "Aluminio Natural",
     color: "#b7c1ca",
-    impact: "Base",
-    subtitle: "+0% estándar",
   },
   white: {
     label: "Blanco Arquitect.",
     color: "#f8fafc",
-    impact: "+10%",
-    subtitle: "Acabado limpio",
   },
   black: {
     label: "Negro Mate",
     color: "#27313f",
-    impact: "+20%",
-    subtitle: "Estilo moderno",
   },
   bronze: {
     label: "Bronce / Madera",
     color: "#815438",
-    impact: "+25%",
-    subtitle: "Acabado premium",
   },
 };
 
@@ -75,36 +67,23 @@ export function buildWhatsAppUrl(phone, name, service, details) {
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }
 
-export function createQuoteWhatsAppMessage(project, reference) {
-  const money = (amount) =>
-    `$${new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount)}`;
-  const estimate = project.estimate;
-
+export function createQuoteWhatsAppMessage(project) {
   return [
-    `Folio: ${reference}`,
-    `RUC/DV: ${project.ruc}-${project.rucDv}`,
+    "Solicitud de cotización — datos del proyecto",
+    `RUC: ${project.ruc}`,
+    `DV: ${project.rucDv}`,
     `WhatsApp: ${project.clientPhone || "No indicado"}`,
     `Correo: ${project.email || "No indicado"}`,
-    `Dirección / referencia: ${project.address || "Por confirmar"}`,
-    `Proyecto: ${project.description}`,
+    `Corregimiento / referencia: ${project.address}`,
+    `Servicio: ${project.serviceLabel}`,
+    `Medidas: ${project.service === "kitchen" ? `${project.width.toFixed(2)} m lineales` : `${project.width.toFixed(2)} × ${project.height.toFixed(2)} m`}`,
+    `Cantidad: ${project.quantity}`,
     project.measurementText
-      ? `Medidas: ${project.measurementText}`
+      ? `Área / longitud: ${project.measurementText}`
       : "",
-    `Zona: ${project.locationLabel}`,
-    `Instalación: ${project.installationIncluded ? "Incluida" : "No incluida"}`,
-    "Desglose estimado (USD):",
-    `Material / fabricación: ${money(estimate.base)}`,
-    `Acabados y opciones: ${money(estimate.finish)}`,
-    `Transporte / flete: ${money(estimate.transport)}`,
-    `Instalación: ${money(estimate.installation)}`,
-    `Subtotal: ${money(estimate.subtotal)}`,
-    `ITBMS (7 %): ${money(estimate.itbms)}`,
-    `Total estimado: ${money(estimate.total)}`,
-    "Descarga el PDF desde el cotizador y adjúntalo a este chat.",
-    "Cotización estimada sujeta a rectificación técnica de medidas en sitio antes de fabricación.",
+    `Especificaciones: ${project.description}`,
+    `Zona del proyecto: ${project.locationLabel}`,
+    `Instalación solicitada: ${project.installationIncluded ? "Sí" : "No"}`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -174,175 +153,4 @@ export function calculateWeldingArea(widthMeters, heightMeters, quantity = 1) {
   const count = toPositiveNumber(quantity);
   if (width === null || height === null || count === null) return null;
   return width * height * count;
-}
-
-export function getPendingEstimateBreakdown() {
-  return {
-    ready: false,
-    base: null,
-    finish: null,
-    transport: null,
-    installation: null,
-    productTotal: null,
-    unitPrice: null,
-    subtotal: null,
-    itbms: null,
-    total: null,
-  };
-}
-
-function isRate(value) {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0;
-}
-
-function roundCurrency(value) {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
-}
-
-export function calculateEstimate(project, config) {
-  const pending = getPendingEstimateBreakdown();
-  const input = project.rateInputs;
-  const locationRates = config.logistics?.[project.location];
-  if (
-    !input ||
-    !locationRates ||
-    !isRate(config.itbmsRate) ||
-    !isRate(locationRates.transportBase) ||
-    !isRate(locationRates.transportPerUnit) ||
-    !isRate(locationRates.installPerUnit)
-  ) {
-    return pending;
-  }
-
-  const frameRate = config.frameMultipliers?.[input.frame];
-  let base;
-  let finish;
-  let measure;
-
-  if (project.service === "windows") {
-    const rates = config.windows;
-    const openingRate = rates?.openingMultipliers?.[input.opening];
-    const glassRate = rates?.glassPerSquareMeter?.[input.glass];
-    if (
-      !isRate(rates?.basePerSquareMeter) ||
-      !isRate(openingRate) ||
-      !isRate(glassRate) ||
-      !isRate(frameRate)
-    ) {
-      return pending;
-    }
-    measure = input.area;
-    base = measure * rates.basePerSquareMeter;
-    finish =
-      base * (openingRate - 1) + base * (frameRate - 1) + measure * glassRate;
-  } else if (project.service === "bathroom") {
-    const rates = config.bathroom;
-    const thicknessRate = rates?.thicknessMultipliers?.[input.thickness];
-    const doorRate = rates?.doorMultipliers?.[input.door];
-    const hardwareRate = rates?.hardwarePerDoor?.[input.hardware];
-    const glassRate = rates?.glassPerSquareMeter?.[input.glass];
-    if (
-      !isRate(rates?.basePerSquareMeter) ||
-      !isRate(thicknessRate) ||
-      !isRate(doorRate) ||
-      !isRate(hardwareRate) ||
-      !isRate(glassRate) ||
-      !isRate(frameRate)
-    ) {
-      return pending;
-    }
-    measure = input.area;
-    base = measure * rates.basePerSquareMeter;
-    finish =
-      base * (thicknessRate - 1) +
-      base * (doorRate - 1) +
-      base * (frameRate - 1) +
-      measure * glassRate +
-      input.quantity * hardwareRate;
-  } else if (project.service === "kitchen") {
-    const rates = config.kitchen;
-    const materialRate = rates?.materialMultipliers?.[input.material];
-    const countertopRate = rates?.countertopPerLinearMeter?.[input.countertop];
-    const softCloseRate = input.softClose ? rates?.softClosePerLinearMeter : 0;
-    if (
-      !isRate(rates?.baseCabinetPerLinearMeter) ||
-      !isRate(rates?.upperCabinetPerLinearMeter) ||
-      !isRate(materialRate) ||
-      !isRate(countertopRate) ||
-      !isRate(softCloseRate) ||
-      !isRate(frameRate)
-    ) {
-      return pending;
-    }
-    measure = input.baseMeters + input.upperMeters;
-    base =
-      input.baseMeters * rates.baseCabinetPerLinearMeter +
-      input.upperMeters * rates.upperCabinetPerLinearMeter;
-    finish =
-      base * (materialRate - 1) +
-      base * (frameRate - 1) +
-      input.baseMeters * countertopRate +
-      input.baseMeters * softCloseRate;
-  } else if (project.service === "welding") {
-    const rates = config.welding;
-    const baseRate = rates?.perSquareMeter?.[input.projectType];
-    const finishRate = rates?.finishPerSquareMeter?.[input.finish];
-    if (!isRate(baseRate) || !isRate(finishRate) || !isRate(frameRate)) {
-      return pending;
-    }
-    measure = input.measure;
-    base = measure * baseRate;
-    finish = measure * (finishRate + baseRate * (frameRate - 1));
-  } else {
-    return pending;
-  }
-
-  if (!Number.isFinite(measure) || measure <= 0) return pending;
-  const unitCount = input.unitCount ?? measure;
-  if (!Number.isFinite(unitCount) || unitCount <= 0) return pending;
-
-  const productTotal = roundCurrency(base + finish);
-  const transport = roundCurrency(
-    locationRates.transportBase + locationRates.transportPerUnit * measure,
-  );
-  const installation = project.installationIncluded
-    ? roundCurrency(locationRates.installPerUnit * measure)
-    : 0;
-  const subtotal = roundCurrency(productTotal + transport + installation);
-  const itbms = roundCurrency(subtotal * config.itbmsRate);
-
-  return {
-    ready: true,
-    base: roundCurrency(base),
-    finish: roundCurrency(finish),
-    transport,
-    installation,
-    productTotal,
-    unitPrice: roundCurrency(productTotal / unitCount),
-    subtotal,
-    itbms,
-    total: roundCurrency(subtotal + itbms),
-  };
-}
-
-export function createQuoteReference(storage, date = new Date()) {
-  const year = date.getFullYear();
-  const key = `hedman-quote-counter-${year}`;
-  try {
-    const storedCount = Number(storage.getItem(key));
-    const nextCount =
-      Number.isSafeInteger(storedCount) && storedCount > 0
-        ? storedCount + 1
-        : 1;
-    storage.setItem(key, String(nextCount));
-    return {
-      reference: `COT-${year}-${String(nextCount).padStart(4, "0")}`,
-      persistent: true,
-    };
-  } catch {
-    return {
-      reference: `COT-${year}-${date.getTime()}`,
-      persistent: false,
-    };
-  }
 }

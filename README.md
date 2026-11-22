@@ -11,10 +11,10 @@ cotización por WhatsApp.
 - JavaScript con módulos ES
 - GitHub Pages
 - WhatsApp Web
-- FastAPI y LibreOffice para generar XLSX y PDF oficiales de forma local
 
-El sitio público sigue siendo estático y no requiere Node.js en producción. El
-API PDF es un servicio aislado en `backend-python/`.
+El sitio público es estático y no requiere Node.js en producción. Las
+cotizaciones de clientes se envían como solicitudes técnicas por WhatsApp; no
+se calculan ni muestran precios en el sitio.
 
 ## Vista previa local
 
@@ -36,16 +36,13 @@ cotizacion.html        Formulario de cotización
 css/styles.css         Estilos comunes
 js/data.js             Datos comerciales y catálogo
 js/main.js             Renderizado de servicios y menú
-js/cotizador.js        Formulario, vista previa e impresión
-js/quote-engine.js     Cálculos de medidas, totales y folios
-js/pricing-config.js   Tarifas demostrativas y tasa ITBMS
-backend-python/        API FastAPI para XLSX, PDF y archivos generados
+js/cotizador.js        Formulario, resumen técnico y WhatsApp
+js/quote-engine.js     Conversión de medidas y mensajes de solicitud
+seller-local/          Herramienta local de precios y PDF (no se publica)
 tests/                 Pruebas automatizadas
 scripts/               Validaciones locales
 docs/                  Arquitectura y gobernanza
 specs/                 Especificaciones vivas
-Apuntes/               Referencias del curso de IA
-Plantilla_Cotización/  Plantilla XLSX
 Logo/                  Identidad visual
 ```
 
@@ -57,28 +54,35 @@ código de país. Ejemplo: `"+507 6317-3442"`.
 Los servicios se mantienen en el arreglo `services` de `js/data.js`. Deben
 conservarse consistentes entre el catálogo y el formulario.
 
-## Cotizador inteligente
+## Solicitudes de cotización
 
 `cotizacion.html` ofrece cuatro pasos, medidas sincronizadas, acabados,
-especificaciones por servicio y una vista SVG en vivo. El motor usa valores de
-demostración editables en `js/pricing-config.js`; no son tarifas comerciales
-aprobadas y deben confirmarse antes de publicar como oferta. El ITBMS está al
-7 %.
+especificaciones por servicio y una vista SVG en vivo. El resumen y el mensaje
+de WhatsApp contienen únicamente los datos técnicos y de contacto. El sitio no
+carga tarifas, calcula importes ni genera una cotización con precios.
 
-El navegador calcula un estimado inmediato con las tarifas de
-`js/pricing-config.js`. Para el PDF oficial, `js/cotizador.js` envía los datos del
-proyecto a `backend-python/` mediante `fetch`; el servicio recalcula el precio y
-rellena una copia saneada del XLSX original sin cambiar su diseño. El archivo de
-origen permanece intacto. En móviles compatibles el PDF se ofrece al menú
-nativo para compartirlo; en otros navegadores se descarga y se abre WhatsApp
-con un resumen.
+El botón principal abre WhatsApp con la solicitud ya preparada. El cliente
+revisa los datos y pulsa **Enviar**. En el cliente estático no se realiza
+ninguna petición `POST`.
 
-Antes de publicar:
+## Cotización final para ventas
 
-1. Ejecutar LibreOffice y el API FastAPI en el servidor estándar elegido.
-2. Configurar CORS para los orígenes públicos permitidos.
-3. Confirmar las tarifas demostrativas y conservar el sitio principal en
-   GitHub Pages.
+`seller-local/ventas.html` es una herramienta interna de uso local. Ventas copia
+la solicitud recibida, edita precio unitario, flete, instalación e ITBMS y usa
+el diálogo del navegador para imprimir o guardar el PDF. La herramienta no
+guarda los datos y no contiene tarifas predefinidas.
+
+Para abrirla en el equipo de ventas, iniciar el servidor local desde la raíz:
+
+```bash
+python -m http.server 8080
+```
+
+Visitar `http://localhost:8080/seller-local/ventas.html`. El workflow de
+GitHub Pages publica una lista explícita de archivos públicos y excluye
+`seller-local/`, `backend-python/`, la plantilla y la configuración interna.
+Esta exclusión no oculta el código fuente del repositorio si este es público;
+no guardes tarifas comerciales reales ni datos de clientes en el repositorio.
 
 ## Instalación y desarrollo
 
@@ -99,7 +103,9 @@ python -m http.server 8080
 
 ## Despliegue
 
-La rama `main` se publica mediante GitHub Pages. Antes de publicar:
+La rama `main` se publica mediante GitHub Pages usando una lista permitida de
+archivos. La herramienta de ventas no se incluye en el artefacto público.
+Antes de publicar:
 
 1. Ejecutar todas las validaciones.
 2. Revisar las páginas en móvil y escritorio.

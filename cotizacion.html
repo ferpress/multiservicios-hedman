@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Diseña tu proyecto y solicita una cotización estimada de ventanas, vidrio templado, cocinas o soldadura en Panamá."
+      content="Configura los detalles técnicos de tu proyecto y envía tu solicitud de cotización por WhatsApp."
     />
     <meta name="theme-color" content="#0f172a" />
     <title>Cotizador inteligente | Multiservicios Hedman</title>
@@ -21,7 +21,7 @@
     />
     <meta
       property="og:description"
-      content="Configura medidas y acabados para recibir una cotización estimada en Panamá."
+      content="Comparte medidas, especificaciones y datos de contacto para solicitar una cotización."
     />
     <meta
       property="og:url"
@@ -109,8 +109,8 @@
           </p>
           <h1>Cotiza tu proyecto <span>a tu medida.</span></h1>
           <p>
-            Elige el servicio, ajusta las medidas y visualiza un estimado
-            referencial antes de compartir tu solicitud.
+            Comparte las especificaciones de tu proyecto y tus datos de contacto
+            para solicitar una cotización directamente por WhatsApp.
           </p>
         </div>
       </section>
@@ -128,7 +128,7 @@
                   <span class="step-badge" aria-hidden="true">1</span>
                   <div>
                     <h3 id="step-service-title">Selecciona el servicio</h3>
-                    <p>Precios de entrada referenciales en USD.</p>
+                    <p>Indica qué tipo de proyecto necesitas cotizar.</p>
                   </div>
                 </header>
                 <fieldset class="service-grid">
@@ -150,7 +150,6 @@
                     <span class="service-card-copy">
                       <strong>Ventanas a Medida</strong>
                       <small>Aluminio y vidrio</small>
-                      <b data-starting-price="windows">Desde $110.00 / m²</b>
                     </span>
                   </label>
                   <label class="service-card">
@@ -164,7 +163,6 @@
                     <span class="service-card-copy">
                       <strong>Puerta de Baño Templada</strong>
                       <small>Vidrio y herrajes</small>
-                      <b data-starting-price="bathroom">Desde $165.00 / m²</b>
                     </span>
                   </label>
                   <label class="service-card">
@@ -180,9 +178,6 @@
                     <span class="service-card-copy">
                       <strong>Muebles de Cocina</strong>
                       <small>Diseño modular</small>
-                      <b data-starting-price="kitchen"
-                        >Desde $240.00 / m lineal</b
-                      >
                     </span>
                   </label>
                   <label class="service-card">
@@ -198,7 +193,6 @@
                     <span class="service-card-copy">
                       <strong>Soldadura General</strong>
                       <small>Fabricación metálica</small>
-                      <b data-starting-price="welding">Desde $95.00 / m²</b>
                     </span>
                   </label>
                 </fieldset>
@@ -330,30 +324,26 @@
                       checked
                     />
                     <span class="swatch-dot swatch-natural"></span>
-                    <span class="swatch-impact">Base</span>
                     <strong>Aluminio Natural</strong>
-                    <small>+0% estándar</small>
+                    <small>Perfil de aluminio</small>
                   </label>
                   <label class="swatch-card">
                     <input type="radio" name="frameColor" value="white" />
                     <span class="swatch-dot swatch-white"></span>
-                    <span class="swatch-impact">+10%</span>
                     <strong>Blanco Arquitect.</strong>
-                    <small>Acabado limpio</small>
+                    <small>Acabado blanco</small>
                   </label>
                   <label class="swatch-card">
                     <input type="radio" name="frameColor" value="black" />
                     <span class="swatch-dot swatch-black"></span>
-                    <span class="swatch-impact">+20%</span>
                     <strong>Negro Mate</strong>
-                    <small>Estilo moderno</small>
+                    <small>Acabado negro mate</small>
                   </label>
                   <label class="swatch-card">
                     <input type="radio" name="frameColor" value="bronze" />
                     <span class="swatch-dot swatch-bronze"></span>
-                    <span class="swatch-impact">+25%</span>
                     <strong>Bronce / Madera</strong>
-                    <small>Acabado premium</small>
+                    <small>Acabado tipo bronce / madera</small>
                   </label>
                 </fieldset>
 
@@ -532,7 +522,7 @@
                     <span
                       ><strong>Incluye instalación</strong
                       ><small
-                        >El costo se calcula según la zona y el tamaño.</small
+                        >Indica si necesitas instalación en el proyecto.</small
                       ></span
                     >
                   </label>
@@ -608,27 +598,6 @@
                 </div>
               </section>
 
-              <div
-                id="custom-quote-alert"
-                class="custom-quote-alert"
-                role="alert"
-                hidden
-              >
-                <strong
-                  >Este proyecto requiere una cotización personalizada.</strong
-                >
-                <span
-                  >Nuestro equipo técnico se comunicará contigo para brindarte
-                  la mejor solución.</span
-                >
-                <button
-                  id="custom-whatsapp"
-                  class="button button-primary"
-                  type="button"
-                >
-                  Solicitar asesoría por WhatsApp
-                </button>
-              </div>
               <p id="quote-error" class="form-error" role="alert" hidden></p>
               <p
                 id="quote-status"
@@ -917,68 +886,59 @@
                 </svg>
               </div>
               <p id="preview-measure" class="quote-area-note">Área: 1.80 m²</p>
-              <div class="quote-price-status" role="status">
-                <strong>Estimado referencial en USD</strong>
-                <span
-                  >Precios de demostración; deben confirmarse antes de
-                  fabricar.</span
-                >
-              </div>
-              <dl class="quote-breakdown">
+              <dl class="quote-request-summary">
                 <div>
-                  <dt>Material / fabricación</dt>
-                  <dd id="breakdown-base">$0.00</dd>
+                  <dt>Medidas</dt>
+                  <dd id="summary-dimensions">1.50 × 1.20 m</dd>
                 </div>
                 <div>
-                  <dt>Acabados y opciones</dt>
-                  <dd id="breakdown-finish">$0.00</dd>
+                  <dt>Cantidad</dt>
+                  <dd id="summary-quantity">1</dd>
                 </div>
                 <div>
-                  <dt>Transporte / flete</dt>
-                  <dd id="breakdown-transport">$0.00</dd>
+                  <dt>Área / longitud</dt>
+                  <dd id="summary-measurement">Completa las medidas</dd>
+                </div>
+                <div>
+                  <dt>Especificaciones</dt>
+                  <dd id="summary-description">Selecciona un servicio</dd>
+                </div>
+                <div>
+                  <dt>Zona</dt>
+                  <dd id="summary-location">Por indicar</dd>
                 </div>
                 <div>
                   <dt>Instalación</dt>
-                  <dd id="breakdown-install">$0.00</dd>
-                </div>
-                <div class="quote-breakdown-subtotal">
-                  <dt>Subtotal</dt>
-                  <dd id="breakdown-subtotal">$0.00</dd>
+                  <dd id="summary-installation">Incluida</dd>
                 </div>
                 <div>
-                  <dt>ITBMS (7 %)</dt>
-                  <dd id="breakdown-tax">$0.00</dd>
+                  <dt>Cliente</dt>
+                  <dd id="summary-customer">Por completar</dd>
                 </div>
-                <div class="quote-breakdown-total">
-                  <dt>Total estimado</dt>
-                  <dd id="breakdown-total">$0.00</dd>
+                <div>
+                  <dt>RUC / DV</dt>
+                  <dd id="summary-ruc">Por completar</dd>
+                </div>
+                <div>
+                  <dt>WhatsApp</dt>
+                  <dd id="summary-phone">No indicado</dd>
+                </div>
+                <div>
+                  <dt>Correo</dt>
+                  <dd id="summary-email">No indicado</dd>
+                </div>
+                <div>
+                  <dt>Corregimiento / referencia</dt>
+                  <dd id="summary-address">Por completar</dd>
                 </div>
               </dl>
-              <p class="quote-estimate-disclaimer">
-                Cotización estimada sujeta a rectificación técnica de medidas en
-                sitio antes de fabricación.
-              </p>
               <div class="quote-preview-actions">
                 <button
-                  id="share-pdf"
+                  id="send-request"
                   class="button button-primary"
                   type="button"
                 >
-                  Compartir PDF por WhatsApp
-                </button>
-                <button
-                  id="download-pdf"
-                  class="button button-outline"
-                  type="button"
-                >
-                  Descargar PDF Oficial
-                </button>
-                <button
-                  id="view-formal-template"
-                  class="button button-text"
-                  type="button"
-                >
-                  Vista previa referencial
+                  Enviar solicitud por WhatsApp
                 </button>
               </div>
               <a
@@ -988,136 +948,13 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 hidden
-                >Abrir WhatsApp; descarga el PDF aparte para adjuntarlo</a
+                >Abrir WhatsApp para enviar tu solicitud</a
               >
             </aside>
           </div>
         </div>
       </section>
 
-      <section
-        id="quote-print"
-        class="quote-print"
-        aria-label="Cotización lista para imprimir o guardar como PDF"
-        hidden
-      ></section>
-
-      <dialog
-        id="template-dialog"
-        class="template-dialog"
-        aria-label="Vista de la cotización formal"
-      >
-        <div class="template-dialog-toolbar">
-          <p>Vista previa de la cotización</p>
-          <button
-            id="close-template"
-            class="button button-outline"
-            type="button"
-          >
-            Cerrar
-          </button>
-        </div>
-        <article id="official-quote" class="official-quote">
-          <header class="official-quote-header">
-            <div class="official-brand">
-              <img
-                src="Logo/Logo%20Hedman.webp"
-                alt="Multiservicios Hedman"
-                width="5130"
-                height="2400"
-              />
-              <div class="official-company">
-                <strong>Multiservicios Hedman</strong>
-                <span>Cel.: (+507) 6317-3442</span>
-                <span>Panamá</span>
-              </div>
-            </div>
-            <div class="official-title">
-              <strong id="formal-reference">COTIZACIÓN</strong>
-              <span>FECHA: <b id="formal-date"></b></span>
-              <span>VÁLIDA HASTA: <b id="formal-validity"></b></span>
-            </div>
-          </header>
-          <section class="official-client">
-            <h2>CLIENTE</h2>
-            <div><strong>Nombre:</strong><span id="formal-name"></span></div>
-            <div><strong>RUC/DV:</strong><span id="formal-ruc"></span></div>
-            <div><strong>WhatsApp:</strong><span id="formal-phone"></span></div>
-            <div><strong>Correo:</strong><span id="formal-email"></span></div>
-            <div>
-              <strong>Ubicación:</strong><span id="formal-location"></span>
-            </div>
-            <div>
-              <strong>Referencia:</strong><span id="formal-address"></span>
-            </div>
-          </section>
-          <table class="official-items">
-            <thead>
-              <tr>
-                <th>DESCRIPCIÓN</th>
-                <th>CANT.</th>
-                <th>P.UNIT</th>
-                <th>TOTAL</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td id="formal-product-description"></td>
-                <td id="formal-product-quantity"></td>
-                <td id="formal-product-unit"></td>
-                <td id="formal-product-total"></td>
-              </tr>
-              <tr>
-                <td>
-                  Transporte y flete ·
-                  <span id="formal-freight-location"></span>
-                </td>
-                <td>1</td>
-                <td id="formal-freight-unit"></td>
-                <td id="formal-freight-total"></td>
-              </tr>
-              <tr id="formal-install-row">
-                <td>Instalación en sitio</td>
-                <td>1</td>
-                <td id="formal-install-unit"></td>
-                <td id="formal-install-total"></td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="official-totals">
-            <div>
-              <strong>Sub - Total</strong><span id="formal-subtotal"></span>
-            </div>
-            <div>
-              <strong>I.T.B.M.S (7%)</strong><span id="formal-tax"></span>
-            </div>
-            <div class="official-grand-total">
-              <strong>TOTAL:</strong><span id="formal-total"></span>
-            </div>
-          </div>
-          <section class="official-terms">
-            <h2>TÉRMINOS Y CONDICIONES</h2>
-            <p id="formal-validity-term"></p>
-            <p>
-              1. Cotización estimada; medidas y acabados sujetos a verificación
-              técnica.
-            </p>
-            <p>
-              2. Los datos para pagos se facilitan por los canales oficiales de
-              Multiservicios Hedman.
-            </p>
-            <p>
-              3. La fabricación inicia tras aprobar materiales, medidas y
-              condiciones de trabajo.
-            </p>
-          </section>
-          <p class="official-disclaimer">
-            Cotización estimada sujeta a rectificación técnica de medidas en
-            sitio antes de fabricación.
-          </p>
-          <footer class="official-thanks">¡GRACIAS POR SU PREFERENCIA!</footer>
-        </article>
-      </dialog>
     </main>
     <footer class="site-footer">
       <div class="container footer-main">
