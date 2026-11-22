@@ -10,6 +10,7 @@ export default [
       globals: {
         window: "readonly",
         document: "readonly",
+        fetch: "readonly",
         URLSearchParams: "readonly",
         FormData: "readonly",
         process: "readonly",

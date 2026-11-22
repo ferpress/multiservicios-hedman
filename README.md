@@ -11,8 +11,10 @@ cotización por WhatsApp.
 - JavaScript con módulos ES
 - GitHub Pages
 - WhatsApp Web
+- FastAPI y LibreOffice para generar el PDF oficial en Render
 
-No utiliza framework, compilador, base de datos ni backend.
+El sitio público sigue siendo estático y no requiere Node.js en producción. El
+API PDF es un servicio aislado en `backend-python/`.
 
 ## Vista previa local
 
@@ -35,8 +37,9 @@ css/styles.css         Estilos comunes
 js/data.js             Datos comerciales y catálogo
 js/main.js             Renderizado de servicios y menú
 js/cotizador.js        Formulario, vista previa e impresión
-js/quote-engine.js     Cálculos de medidas y resumen de cotización
-js/tarifas.js          Configuración de tarifas y tasa ITBMS
+js/quote-engine.js     Cálculos de medidas, totales y folios
+js/pricing-config.js   Tarifas demostrativas y tasa ITBMS
+backend-python/        API FastAPI aislada para el PDF oficial en Render
 tests/                 Pruebas automatizadas
 scripts/               Validaciones locales
 docs/                  Arquitectura y gobernanza
@@ -56,13 +59,28 @@ conservarse consistentes entre el catálogo y el formulario.
 
 ## Cotizador inteligente
 
-`cotizacion.html` permite detallar ventanas, puertas de baño, muebles de cocina
-y trabajos de soldadura, con una vista SVG en vivo y una solicitud lista para
-WhatsApp. La salida imprimible sigue la estructura de la plantilla Excel, pero
-no modifica el archivo `.xlsx`. No hay tarifas cargadas: el cotizador muestra
-“Pendiente” y no inventa montos. Completar tarifas aprobadas en
-`js/tarifas.js` siguiendo `docs/pricing-configuration.md`. El ITBMS se presenta
-al 7 %; los importes se calcularán solo después de disponer de un subtotal real.
+`cotizacion.html` ofrece cuatro pasos, medidas sincronizadas, acabados,
+especificaciones por servicio y una vista SVG en vivo. El motor usa valores de
+demostración editables en `js/pricing-config.js`; no son tarifas comerciales
+aprobadas y deben confirmarse antes de publicar como oferta. El ITBMS está al
+7 %.
+
+El navegador calcula un estimado inmediato con las tarifas de
+`js/pricing-config.js`. Para el PDF oficial, `js/cotizador.js` envía los datos del
+proyecto a `backend-python/` mediante `fetch`; el servicio recalcula el precio y
+rellena una copia saneada del XLSX original sin cambiar su diseño. El archivo de
+origen permanece intacto. En móviles compatibles el PDF se ofrece al menú
+nativo para compartirlo; en otros navegadores se descarga y se abre WhatsApp
+con un resumen.
+
+Antes de publicar:
+
+1. Desplegar `backend-python/` como servicio Docker independiente en Render.
+2. Configurar `API_URL` al URL HTTPS asignado por Render en `js/cotizador.js`.
+3. Configurar CORS para `https://multiservicioshedman.com` y
+   `https://ferpress.github.io`.
+4. Confirmar las tarifas demostrativas y conservar el sitio principal en
+   GitHub Pages.
 
 ## Instalación y desarrollo
 
@@ -98,6 +116,8 @@ La rama `main` se publica mediante GitHub Pages. Antes de publicar:
 - `npm run lint`: calidad de JavaScript.
 - `npm run format:check`: formato.
 - `npm run validate:links`: enlaces locales.
+- `python -m unittest discover -s backend-python -p "test_*.py"`: motor Python y
+  manipulación de la plantilla.
 
 ## Convenciones
 
