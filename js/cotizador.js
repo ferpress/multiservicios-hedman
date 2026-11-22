@@ -14,7 +14,13 @@ import {
   serviceLabels,
 } from "./quote-engine.js";
 
-const API_URL = "https://multiservicios-hedman-api.onrender.com";
+const API_URL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? window.location.port === "10000"
+      ? window.location.origin
+      : "http://127.0.0.1:10000"
+    : window.location.origin;
 const form = document.querySelector("#quote-form");
 const quoteError = document.querySelector("#quote-error");
 const quoteStatus = document.querySelector("#quote-status");
@@ -255,7 +261,10 @@ function readProject() {
     locationLabel: locationLabels[location] ?? "Por confirmar",
     installationIncluded,
     name: formValue(data, "name"),
+    ruc: formValue(data, "ruc"),
+    rucDv: formValue(data, "rucDv"),
     clientPhone: formValue(data, "clientPhone"),
+    email: formValue(data, "email"),
     address: formValue(data, "address"),
     details: formValue(data, "details"),
     lShape,
@@ -490,8 +499,12 @@ function updateFormalQuote(project) {
     dateFormatter.format(validUntil);
   document.querySelector("#formal-name").textContent =
     project.name || "Por confirmar";
+  document.querySelector("#formal-ruc").textContent =
+    `${project.ruc || "Por confirmar"}${project.rucDv ? `-${project.rucDv}` : ""}`;
   document.querySelector("#formal-phone").textContent =
     project.clientPhone || "No indicado";
+  document.querySelector("#formal-email").textContent =
+    project.email || "No indicado";
   document.querySelector("#formal-location").textContent =
     project.locationLabel;
   document.querySelector("#formal-address").textContent =
@@ -560,7 +573,10 @@ function buildPdfPayload(project) {
   const data = formData();
   return {
     name: project.name,
+    ruc: project.ruc,
+    ruc_dv: project.rucDv,
     client_phone: project.clientPhone,
+    email: project.email,
     address: project.address,
     service: project.service,
     location: project.location,
@@ -621,7 +637,12 @@ async function requestOfficialPdf(project) {
   if (!reference || !/^COT-\d{4}-\d{4,}$/.test(reference)) {
     throw new Error("El servicio no devolvió un folio oficial válido.");
   }
-  return { blob, reference };
+  return {
+    blob,
+    reference,
+    pdfUrl: response.headers.get("X-PDF-URL"),
+    xlsxUrl: response.headers.get("X-XLSX-URL"),
+  };
 }
 
 function setPdfLoading(isLoading) {
@@ -633,12 +654,15 @@ function setPdfLoading(isLoading) {
   }
 }
 
-function getWhatsAppFallbackUrl(project, reference) {
+function getWhatsAppFallbackUrl(project, reference, pdfUrl) {
   const details = [
     `Folio: ${reference}`,
+    `RUC/DV: ${project.ruc}-${project.rucDv}`,
     project.description,
     `Zona: ${project.locationLabel}`,
-    "Descargué el PDF de la cotización; lo adjuntaré a este mensaje.",
+    pdfUrl
+      ? `PDF: ${new URL(pdfUrl, API_URL).href}`
+      : "Descargué el PDF de la cotización; lo adjuntaré a este mensaje.",
     "Cotización estimada sujeta a rectificación técnica de medidas en sitio antes de fabricación.",
   ].join("\n");
   return buildWhatsAppUrl(
@@ -687,7 +711,7 @@ async function handleDownloadPdf() {
   if (!project) return;
   setPdfLoading(true);
   try {
-    const { blob, reference } = await requestOfficialPdf(project);
+    const { blob, reference, pdfUrl } = await requestOfficialPdf(project);
     downloadBlob(blob, `Cotizacion-HEDMAN-${reference}.pdf`);
     quoteStatus.textContent = `PDF oficial descargado: ${reference}.`;
   } catch (error) {
@@ -743,7 +767,7 @@ async function handleSharePdf() {
     }
 
     downloadBlob(blob, filename);
-    const whatsappUrl = getWhatsAppFallbackUrl(project, reference);
+    const whatsappUrl = getWhatsAppFallbackUrl(project, reference, pdfUrl);
     if (!whatsappUrl) {
       throw new Error(
         "El número de WhatsApp comercial no está configurado correctamente.",

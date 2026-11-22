@@ -22,8 +22,8 @@ y recursos comunes.
   del servidor.
 - `backend-python/template_renderer.py`: actualización de valores en la copia
   saneada de la hoja XLSX y conversión PDF con LibreOffice.
-- `backend-python/quote_store.py`: consecutivo anual SQLite; requiere disco
-  persistente en Render para sobrevivir reinicios.
+- `backend-python/quote_store.py`: consecutivo anual SQLite con ruta persistente
+  configurable.
 
 ## Flujo de cotización
 
@@ -43,5 +43,5 @@ estimación instantánea y en `backend-python/pricing_engine.py` para el cálcul
 oficial. Deben mantenerse sincronizadas y ser aprobadas comercialmente. El
 ITBMS de 7 % se calcula en ambos lados.
 
-El alojamiento de `index.html`, `cotizacion.html`, CSS/JS y el dominio continúa
-en GitHub Pages; Render aloja solamente el microservicio Python.
+El sitio estático puede publicarse en GitHub Pages. El API Python puede ejecutarse
+localmente o en cualquier servidor estándar compatible con FastAPI y LibreOffice.

@@ -39,7 +39,10 @@ class QuoteApiTests(unittest.TestCase):
     def test_pdf_endpoint_returns_generated_pdf_with_official_reference(self):
         request = quote_app.QuoteRequest(
             name="Cliente de prueba",
+            ruc="8-123-456",
+            ruc_dv="12",
             client_phone="6000-0000",
+            email="cliente@example.com",
             address="Referencia de prueba",
             service="windows",
             location="center",
@@ -56,6 +59,11 @@ class QuoteApiTests(unittest.TestCase):
             database_path = Path(directory) / "quotes.sqlite3"
             with (
                 patch.object(quote_app, "TEMPLATE_PATH", TEMPLATE),
+                patch.object(
+                    quote_app,
+                    "GENERATED_DIR",
+                    Path(directory) / "generated",
+                ),
                 patch.object(
                     quote_app,
                     "_convert_to_pdf",

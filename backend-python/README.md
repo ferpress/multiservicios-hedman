@@ -14,23 +14,12 @@ solo elimina datos variables de la cotización histórica; el archivo original e
 La API modifica exclusivamente valores de celdas de referencia, fecha, cliente,
 conceptos, totales y vigencia. No agrega ni elimina filas o celdas combinadas.
 
-## Despliegue en Render
+## Ejecución local o en servidor estándar
 
-Crear un servicio **Web Service** desde este repositorio con:
+El API puede ejecutarse con Uvicorn detrás de un servidor estándar. Para conservar
+los consecutivos, define `QUOTE_DB_PATH` con una ruta persistente.
 
-- Root Directory: `backend-python`
-- Runtime: Docker
-- Health Check Path: `/health`
-- Puerto: Render lo proporciona mediante `PORT`
-
-Para conservar los consecutivos tras reinicios, adjuntar un disco persistente
-montado en `/var/data` y definir `QUOTE_DB_PATH=/var/data/quotes.sqlite3`.
-Sin disco, la API funciona, pero el contador SQLite de `/tmp` se reinicia cuando
-Render reemplaza la instancia. Mantener una sola instancia si se usa el disco
-local; para varias instancias se necesita una base de datos compartida.
-
-Después del despliegue, copiar la URL HTTPS asignada por Render a `API_URL` en
-`js/cotizador.js`. La configuración CORS acepta únicamente:
+La configuración CORS acepta únicamente:
 
 - `https://multiservicioshedman.com`
 - `https://ferpress.github.io`
@@ -65,7 +54,7 @@ python -m unittest discover -s . -p "test_*.py"
 ## Privacidad y folios
 
 El servicio no escribe datos del cliente en una base de cotizaciones: la base
-SQLite guarda únicamente el consecutivo anual. Los datos se usan en memoria y
-en archivos temporales para producir el PDF, que se eliminan al terminar la
-solicitud. La base local de Render debe estar en un disco persistente para que
-el consecutivo se mantenga después de reinicios.
+SQLite guarda únicamente el consecutivo anual. Los datos del cliente se usan
+solo durante la generación y los archivos se conservan en
+`cotizaciones_generadas/`. La base local debe estar en una ruta persistente
+para que el consecutivo se mantenga después de reinicios.

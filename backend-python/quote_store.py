@@ -18,7 +18,10 @@ def next_quote_reference(
     year = local_now.year
     path = Path(
         database_path
-        or os.environ.get("QUOTE_DB_PATH", "/tmp/hedman-quotes.sqlite3")
+        or os.environ.get(
+            "QUOTE_DB_PATH",
+            str(Path(__file__).resolve().parent / "quotes.sqlite3"),
+        )
     )
     path.parent.mkdir(parents=True, exist_ok=True)
 

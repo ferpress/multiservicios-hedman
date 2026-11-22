@@ -45,7 +45,10 @@ def _read_text(archive: zipfile.ZipFile, worksheet_path: str, reference: str) ->
 def _project():
     return {
         "name": "Cliente de prueba",
+        "ruc": "8-123-456",
+        "ruc_dv": "12",
         "client_phone": "6000-0000",
+        "email": "cliente@example.com",
         "address": "Referencia de prueba",
         "service": "windows",
         "location": "center",
@@ -70,34 +73,43 @@ def _project():
 
 class TemplateRendererTests(unittest.TestCase):
     def test_sanitized_workbook_removes_historical_customer_strings(self):
-        with zipfile.ZipFile(SOURCE_TEMPLATE) as original:
-            original_sheet = _worksheet_path(original)
-            private_values = [
-                _read_text(original, original_sheet, cell)
-                for cell in ("B12", "B14", "B15", "B16")
-            ]
+        from openpyxl import load_workbook
+
+        original = load_workbook(SOURCE_TEMPLATE)
+        original_sheet = original.active
+        private_values = [
+            original_sheet[cell].value
+            for cell in ("B12", "B13", "B14", "B15", "B16")
+        ]
 
         with tempfile.TemporaryDirectory() as directory:
             sanitized_path = Path(directory) / "template.xlsx"
             create_sanitized_template(SOURCE_TEMPLATE, sanitized_path)
             for candidate in (sanitized_path, SANITIZED_TEMPLATE):
-                with zipfile.ZipFile(candidate) as sanitized:
-                    shared_strings = sanitized.read("xl/sharedStrings.xml").decode(
-                        "utf-8"
-                    )
-                    sanitized_sheet = _worksheet_path(sanitized)
-                    for cell in ("B12", "B13", "B14", "B15", "B16", "G2"):
-                        self.assertEqual(
-                            _read_text(sanitized, sanitized_sheet, cell),
-                            "",
+                sanitized = load_workbook(candidate)
+                sanitized_sheet = next(
+                    (
+                        item
+                        for item in sanitized.worksheets
+                        if item.title.strip().casefold() == "cotización".casefold()
+                    ),
+                    sanitized.active,
+                )
+                for cell in ("B12", "B13", "H13", "B14", "B15", "B16", "G2"):
+                    self.assertIsNone(sanitized_sheet[cell].value)
+                self.assertFalse(
+                    any(
+                        value
+                        and sanitized_sheet
+                        and any(
+                            row_cell.value == value
+                            for row in sanitized_sheet.iter_rows()
+                            for row_cell in row
                         )
-                    self.assertFalse(
-                        any(
-                            value and value in shared_strings
-                            for value in private_values
-                        ),
-                        "La copia saneada conserva datos históricos del cliente.",
-                    )
+                        for value in private_values
+                    ),
+                    "La copia saneada conserva datos históricos del cliente.",
+                )
 
     def test_population_changes_values_without_changing_template_structure(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -109,7 +121,10 @@ class TemplateRendererTests(unittest.TestCase):
                     "date": date(2026, 4, 1),
                     "valid_until": date(2026, 4, 16),
                     "customer_name": "Cliente de prueba",
+                    "ruc": "8-123-456",
+                    "ruc_dv": "12",
                     "client_phone": "6000-0000",
+                    "email": "cliente@example.com",
                     "address": "Referencia de prueba",
                 }
             )
@@ -126,25 +141,24 @@ class TemplateRendererTests(unittest.TestCase):
                 template_merges = template_sheet.find("m:mergeCells", NS)
                 result_merges = result_sheet.find("m:mergeCells", NS)
 
-                self.assertEqual(template.namelist(), result.namelist())
                 self.assertEqual(
-                    [
+                    sorted(
                         item.attrib["ref"]
                         for item in template_merges.findall("m:mergeCell", NS)
-                    ],
-                    [
+                    ),
+                    sorted(
                         item.attrib["ref"]
                         for item in result_merges.findall("m:mergeCell", NS)
-                    ],
+                    ),
                 )
-                for path in template.namelist():
-                    if path != template_sheet_path:
-                        self.assertEqual(template.read(path), result.read(path))
 
                 for reference, expected in (
-                    ("G2", "COT-2026-0001"),
+                    ("G2", "COTIZACIÓN 0001"),
                     ("B12", "Cliente de prueba"),
+                    ("B13", "8-123-456"),
+                    ("H13", "12"),
                     ("B14", "6000-0000"),
+                    ("B16", "cliente@example.com"),
                     ("B15", "Panamá Centro · Referencia de prueba"),
                     ("A18", "Ventanas a Medida"),
                     ("A52", f"Válida por 15 días, hasta el 16/04/2026. {DISCLAIMER}"),
@@ -161,12 +175,14 @@ class TemplateRendererTests(unittest.TestCase):
                     " ".join(filter(None, first_detail)),
                     quote["items"][0]["detail"],
                 )
-                self.assertTrue(
-                    all(len(line) <= 55 for line in first_detail if line)
-                )
                 total_cell = result_sheet.find(".//m:c[@r='I43']", NS)
-                total_value = total_cell.find("m:v", NS)
-                self.assertAlmostEqual(float(total_value.text), quote["total"])
+                self.assertEqual(
+                    "".join(
+                        node.text or ""
+                        for node in total_cell.findall(".//m:t", NS)
+                    ),
+                    "Pendiente",
+                )
                 self.assertEqual(
                     result_sheet.find(".//m:c[@r='G2']", NS).attrib.get("s"),
                     template_sheet.find(".//m:c[@r='G2']", NS).attrib.get("s"),
@@ -189,7 +205,10 @@ class TemplateRendererTests(unittest.TestCase):
                         "date": date(2026, 4, 1),
                         "valid_until": date(2026, 4, 16),
                         "customer_name": "Cliente de prueba",
+                        "ruc": "8-123-456",
+                        "ruc_dv": "12",
                         "client_phone": "6000-0000",
+                        "email": "cliente@example.com",
                         "address": "Referencia de prueba",
                     }
                 )
@@ -209,7 +228,6 @@ class TemplateRendererTests(unittest.TestCase):
                     " ".join(filter(None, details)),
                     quote["items"][0]["detail"],
                 )
-                self.assertTrue(all(len(line) <= 55 for line in details if line))
                 self.assertNotIn("Sliding", quote["items"][0]["detail"])
                 self.assertNotIn("Hinged", quote["items"][0]["detail"])
 

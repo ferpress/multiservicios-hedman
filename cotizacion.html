@@ -549,7 +549,30 @@
                     />
                   </label>
                   <label class="quote-field">
-                    WhatsApp <span class="field-optional">(opcional)</span>
+                    RUC <span class="field-required">(obligatorio)</span>
+                    <input
+                      class="form-control"
+                      name="ruc"
+                      type="text"
+                      inputmode="numeric"
+                      maxlength="30"
+                      placeholder="Ej.: 8-939-1030"
+                      required
+                    />
+                  </label>
+                  <label class="quote-field">
+                    DV <span class="field-required">(obligatorio)</span>
+                    <input
+                      class="form-control"
+                      name="rucDv"
+                      type="text"
+                      maxlength="10"
+                      placeholder="Ej.: 42"
+                      required
+                    />
+                  </label>
+                  <label class="quote-field">
+                    WhatsApp
                     <input
                       class="form-control"
                       name="clientPhone"
@@ -557,6 +580,17 @@
                       autocomplete="tel"
                       maxlength="24"
                       placeholder="+507 6000-0000"
+                    />
+                  </label>
+                  <label class="quote-field">
+                    Correo electrónico
+                    <input
+                      class="form-control"
+                      name="email"
+                      type="email"
+                      autocomplete="email"
+                      maxlength="120"
+                      placeholder="correo@ejemplo.com"
                     />
                   </label>
                   <label class="quote-field quote-field-full">
@@ -1004,7 +1038,9 @@
           <section class="official-client">
             <h2>CLIENTE</h2>
             <div><strong>Nombre:</strong><span id="formal-name"></span></div>
+            <div><strong>RUC/DV:</strong><span id="formal-ruc"></span></div>
             <div><strong>WhatsApp:</strong><span id="formal-phone"></span></div>
+            <div><strong>Correo:</strong><span id="formal-email"></span></div>
             <div>
               <strong>Ubicación:</strong><span id="formal-location"></span>
             </div>

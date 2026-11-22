@@ -11,7 +11,7 @@ cotización por WhatsApp.
 - JavaScript con módulos ES
 - GitHub Pages
 - WhatsApp Web
-- FastAPI y LibreOffice para generar el PDF oficial en Render
+- FastAPI y LibreOffice para generar XLSX y PDF oficiales de forma local
 
 El sitio público sigue siendo estático y no requiere Node.js en producción. El
 API PDF es un servicio aislado en `backend-python/`.
@@ -39,7 +39,7 @@ js/main.js             Renderizado de servicios y menú
 js/cotizador.js        Formulario, vista previa e impresión
 js/quote-engine.js     Cálculos de medidas, totales y folios
 js/pricing-config.js   Tarifas demostrativas y tasa ITBMS
-backend-python/        API FastAPI aislada para el PDF oficial en Render
+backend-python/        API FastAPI para XLSX, PDF y archivos generados
 tests/                 Pruebas automatizadas
 scripts/               Validaciones locales
 docs/                  Arquitectura y gobernanza
@@ -75,11 +75,9 @@ con un resumen.
 
 Antes de publicar:
 
-1. Desplegar `backend-python/` como servicio Docker independiente en Render.
-2. Configurar `API_URL` al URL HTTPS asignado por Render en `js/cotizador.js`.
-3. Configurar CORS para `https://multiservicioshedman.com` y
-   `https://ferpress.github.io`.
-4. Confirmar las tarifas demostrativas y conservar el sitio principal en
+1. Ejecutar LibreOffice y el API FastAPI en el servidor estándar elegido.
+2. Configurar CORS para los orígenes públicos permitidos.
+3. Confirmar las tarifas demostrativas y conservar el sitio principal en
    GitHub Pages.
 
 ## Instalación y desarrollo

@@ -40,12 +40,10 @@ ambos motores de cálculo.
 ## Vigencia, folios y PDF
 
 El PDF oficial obtiene su folio `COT-AAAA-NNNN` de SQLite en el servicio
-Python. Configura `QUOTE_DB_PATH` en un disco persistente de Render; la ruta
-predeterminada `/tmp` no conserva consecutivos al reemplazarse la instancia.
+Python. Configura `QUOTE_DB_PATH` en una ruta persistente del servidor.
 
 La salida PDF se genera con una copia saneada de la plantilla XLSX existente y
-LibreOffice. El libro fuente no se modifica. Configura el URL de Render en la
-constante `API_URL` de `js/cotizador.js`; CORS debe permitir únicamente los
+LibreOffice. El libro fuente no se modifica. CORS debe permitir únicamente los
 orígenes públicos del sitio y de GitHub Pages.
 
 **Texto obligatorio en cotizaciones:** “Cotización estimada sujeta a
