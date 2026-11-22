@@ -29,6 +29,7 @@ ALLOWED_ORIGINS = [
     "https://multiservicioshedman.com",
     "https://ferpress.github.io",
 ]
+LOCAL_ORIGIN_REGEX = r"^https?://(?:localhost|127\.0\.0\.1)(?::\d+)?$"
 
 app = FastAPI(
     title="Cotizador Multiservicios Hedman",
@@ -37,6 +38,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=LOCAL_ORIGIN_REGEX,
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["Content-Type"],

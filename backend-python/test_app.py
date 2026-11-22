@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import tempfile
 import unittest
 from pathlib import Path
@@ -13,6 +14,28 @@ TEMPLATE = Path(__file__).parent / "templates" / "cotizacion_plantilla.xlsx"
 
 
 class QuoteApiTests(unittest.TestCase):
+    def test_cors_allows_production_sites_and_local_development(self):
+        self.assertIn(
+            "https://multiservicioshedman.com",
+            quote_app.ALLOWED_ORIGINS,
+        )
+        self.assertIn(
+            "https://ferpress.github.io",
+            quote_app.ALLOWED_ORIGINS,
+        )
+        self.assertRegex(
+            "http://127.0.0.1:8765",
+            re.compile(quote_app.LOCAL_ORIGIN_REGEX),
+        )
+        self.assertRegex(
+            "http://localhost:8080",
+            re.compile(quote_app.LOCAL_ORIGIN_REGEX),
+        )
+        self.assertNotRegex(
+            "https://localhost.example.com",
+            re.compile(quote_app.LOCAL_ORIGIN_REGEX),
+        )
+
     def test_pdf_endpoint_returns_generated_pdf_with_official_reference(self):
         request = quote_app.QuoteRequest(
             name="Cliente de prueba",

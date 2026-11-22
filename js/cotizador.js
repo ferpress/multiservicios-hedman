@@ -593,7 +593,7 @@ async function requestOfficialPdf(project) {
     });
   } catch {
     throw new Error(
-      `No se pudo conectar con el servicio de cotización. Verifica API_URL: ${API_URL}`,
+      `No se pudo conectar con el API de cotización (${API_URL}). Verifica que esté desplegado y que CORS permita el origen ${window.location.origin}.`,
     );
   }
 

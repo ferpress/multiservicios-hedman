@@ -34,6 +34,7 @@ Después del despliegue, copiar la URL HTTPS asignada por Render a `API_URL` en
 
 - `https://multiservicioshedman.com`
 - `https://ferpress.github.io`
+- `http://localhost` y `http://127.0.0.1` para desarrollo local.
 
 ## API
 
