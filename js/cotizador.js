@@ -177,8 +177,6 @@ function readProject() {
     locationLabel: locationLabels[location] ?? "Por confirmar",
     installationIncluded,
     name: formValue(data, "name"),
-    ruc: formValue(data, "ruc"),
-    rucDv: formValue(data, "rucDv"),
     clientPhone: formValue(data, "clientPhone"),
     email: formValue(data, "email"),
     address: formValue(data, "address"),
@@ -318,9 +316,6 @@ function updateRequestSummary(project) {
     location: project.locationLabel,
     installation: project.installationIncluded ? "Solicitada" : "No solicitada",
     customer: project.name || "Por completar",
-    ruc: project.ruc
-      ? `${project.ruc}${project.rucDv ? ` / ${project.rucDv}` : ""}`
-      : "Por completar",
     phone: project.clientPhone || "No indicado",
     email: project.email || "No indicado",
     address: project.address || "Por completar",
@@ -399,7 +394,10 @@ async function processQuoteAction(mode) {
     button.disabled = true;
   });
   quoteActions.setAttribute("aria-busy", "true");
-  quoteStatus.textContent = "Generando consecutivo y documento PDF...";
+  quoteStatus.textContent =
+    mode === "enviar"
+      ? "Enviando solicitud al correo del vendedor..."
+      : "Generando consecutivo y documento PDF...";
 
   try {
     const data = await requestQuoteDocument(
@@ -408,6 +406,12 @@ async function processQuoteAction(mode) {
     const consecutivo = String(data.consecutivo ?? "").trim();
     if (!consecutivo) {
       throw new Error("Apps Script no devolvió el consecutivo de la solicitud.");
+    }
+
+    if (mode === "enviar" && data.correoEnviado !== true) {
+      throw new Error(
+        `La solicitud ${consecutivo} se procesó, pero no se confirmó el envío al correo del vendedor.`,
+      );
     }
 
     if (mode === "descargar" || mode === "whatsapp") {
@@ -442,7 +446,7 @@ async function processQuoteAction(mode) {
     }
 
     const messages = {
-      enviar: `¡Listo! La solicitud ${consecutivo} se procesó correctamente.`,
+      enviar: `¡Listo! La solicitud ${consecutivo} fue enviada al correo del vendedor.`,
       descargar: `PDF sin precios ${consecutivo} descargado correctamente.`,
       whatsapp: whatsappWindow
         ? `PDF ${consecutivo} descargado. Revisa WhatsApp y adjunta el archivo.`

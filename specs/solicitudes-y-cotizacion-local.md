@@ -13,7 +13,12 @@ la generación de la cotización final son responsabilidades internas de ventas.
   especificaciones, ubicación e instalación.
 - «Enviar solicitud automática» envía el payload técnico y de contacto a la
   implementación de Google Apps Script configurada; no incluye campos de
-  precios.
+  precios, RUC ni DV. El JSON contiene exclusivamente `cliente`, `telefono`,
+  `ubicacion`, `correo`, `items: [{ descripcion, cantidad }]` y
+  `enviarCorreo`.
+- La acción automática envía `enviarCorreo: true` y solo confirma el envío al
+  correo del vendedor cuando la respuesta indica `correoEnviado: true`.
+- Las acciones de descarga y WhatsApp usan `enviarCorreo: false`.
 - «Descargar PDF sin precios» descarga `pdfBase64` de la respuesta JSON.
 - «Enviar por WhatsApp» genera y descarga el PDF, luego abre WhatsApp con el
   consecutivo y los datos técnicos. El cliente debe adjuntar el archivo.

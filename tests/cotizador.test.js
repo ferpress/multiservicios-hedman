@@ -43,8 +43,6 @@ test("WhatsApp request includes technical and contact details but no prices", ()
     {
       service: "windows",
       serviceLabel: "Ventanas a Medida",
-      ruc: "8-123-456",
-      rucDv: "12",
       clientPhone: "+507 6000-0000",
       email: "ana@example.com",
       address: "San Miguelito",
@@ -58,43 +56,57 @@ test("WhatsApp request includes technical and contact details but no prices", ()
     },
   );
 
-  assert.match(message, /RUC: 8-123-456/);
-  assert.match(message, /DV: 12/);
   assert.match(message, /Área neta: 1\.80 m²/);
   assert.match(message, /Cantidad: 2/);
   assert.match(message, /Zona del proyecto: San Miguelito/);
   assert.doesNotMatch(message, /\$|ITBMS|Subtotal|Total estimado|precio/i);
 });
 
-test("Apps Script payload contains customer and technical data, but no prices", () => {
+test("Apps Script payload has only approved customer, item, and email fields", () => {
   const payload = createAppsScriptPayload(
     {
       serviceLabel: "Ventanas a Medida",
-      width: 1.5,
-      height: 1.2,
       quantity: 2,
-      colorLabel: "Negro Mate",
       description: "Ventana corrediza, vidrio templado",
-      measurementText: "Área neta: 1.80 m²",
       name: "Ana",
-      ruc: "8-123-456",
-      rucDv: "12",
       clientPhone: "+507 6000-0000",
       email: "ana@example.com",
       address: "San Miguelito",
       locationLabel: "San Miguelito",
-      installationIncluded: true,
     },
-    "whatsapp",
+    "enviar",
   );
 
   assert.equal(payload.cliente, "Ana");
-  assert.equal(payload.ruc, "8-123-456");
-  assert.equal(payload.dv, "12");
+  assert.equal(payload.telefono, "+507 6000-0000");
+  assert.equal(payload.ubicacion, "San Miguelito");
+  assert.equal(payload.correo, "ana@example.com");
+  assert.deepEqual(payload.items, [
+    { descripcion: "Ventana corrediza, vidrio templado", cantidad: 2 },
+  ]);
   assert.equal(payload.enviarCorreo, true);
-  assert.equal(payload.modo, "whatsapp");
-  assert.equal("precio" in payload, false);
-  assert.equal("total" in payload, false);
+  assert.deepEqual(Object.keys(payload), [
+    "cliente",
+    "telefono",
+    "ubicacion",
+    "correo",
+    "items",
+    "enviarCorreo",
+  ]);
+});
+
+test("download and WhatsApp payloads do not request seller email", () => {
+  const project = {
+    name: "Ana",
+    clientPhone: "+507 6000-0000",
+    address: "San Miguelito",
+    locationLabel: "San Miguelito",
+    email: "ana@example.com",
+    description: "Ventana corrediza",
+    quantity: 2,
+  };
+  assert.equal(createAppsScriptPayload(project, "descargar").enviarCorreo, false);
+  assert.equal(createAppsScriptPayload(project, "whatsapp").enviarCorreo, false);
 });
 
 test("Apps Script request sends JSON as a simple POST and checks the response", async () => {
@@ -106,14 +118,21 @@ test("Apps Script request sends JSON as a simple POST and checks the response", 
       return {
         ok: true,
         status: 200,
-        json: async () => ({ ok: true, consecutivo: "COT-2026-0001" }),
+        json: async () => ({
+          ok: true,
+          consecutivo: "COT-2026-0001",
+          correoEnviado: true,
+        }),
       };
     },
   );
 
   assert.match(request.url, /^https:\/\/script\.google\.com\/macros\/s\//);
   assert.equal(request.options.method, "POST");
-  assert.match(request.options.headers["Content-Type"], /^text\/plain/);
+  assert.equal(
+    request.options.headers["Content-Type"],
+    "text/plain;charset=utf-8",
+  );
   assert.deepEqual(JSON.parse(request.options.body), { cliente: "Ana" });
   assert.equal(result.consecutivo, "COT-2026-0001");
 });
@@ -126,6 +145,17 @@ test("Apps Script errors are surfaced to the customer flow", async () => {
       json: async () => ({ ok: false, error: "Solicitud inválida" }),
     })),
     /Solicitud inválida/,
+  );
+});
+
+test("Apps Script response includes email delivery status", async () => {
+  await assert.rejects(
+    requestQuoteDocument({}, async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ ok: true, consecutivo: "COT-2026-0002" }),
+    })),
+    /no indicó si envió el correo/,
   );
 });
 

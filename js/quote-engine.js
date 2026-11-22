@@ -70,8 +70,6 @@ export function buildWhatsAppUrl(phone, name, service, details) {
 export function createQuoteWhatsAppMessage(project) {
   return [
     "Solicitud de cotización — datos del proyecto",
-    `RUC: ${project.ruc}`,
-    `DV: ${project.rucDv}`,
     `WhatsApp: ${project.clientPhone || "No indicado"}`,
     `Correo: ${project.email || "No indicado"}`,
     `Corregimiento / referencia: ${project.address}`,

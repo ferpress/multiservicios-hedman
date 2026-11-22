@@ -3,30 +3,26 @@ export const APPS_SCRIPT_URL =
 
 export function createAppsScriptPayload(project, mode) {
   return {
-    modo: mode,
-    servicio: project.serviceLabel,
-    ancho: project.width,
-    alto: project.height ?? "",
-    cantidad: project.quantity,
-    acabado: project.colorLabel,
-    especificaciones: project.description,
-    area: project.measurementText,
     cliente: project.name,
-    ruc: project.ruc,
-    dv: project.rucDv,
     telefono: project.clientPhone,
+    ubicacion: [...new Set([project.address, project.locationLabel])]
+      .filter(Boolean)
+      .join(" — "),
     correo: project.email,
-    ubicacion: project.address,
-    zona: project.locationLabel,
-    instalacion: project.installationIncluded,
-    enviarCorreo: mode === "enviar" || mode === "whatsapp",
+    items: [
+      {
+        descripcion: project.description,
+        cantidad: project.quantity,
+      },
+    ],
+    enviarCorreo: mode === "enviar",
   };
 }
 
 export async function requestQuoteDocument(payload, fetchImpl = fetch) {
   const response = await fetchImpl(APPS_SCRIPT_URL, {
     method: "POST",
-    headers: { "Content-Type": "text/plain;charset=UTF-8" },
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload),
   });
 
@@ -50,6 +46,9 @@ export async function requestQuoteDocument(payload, fetchImpl = fetch) {
         ? data.error
         : "Apps Script no pudo procesar la solicitud.",
     );
+  }
+  if (typeof data.correoEnviado !== "boolean") {
+    throw new Error("Apps Script no indicó si envió el correo al vendedor.");
   }
 
   return data;
